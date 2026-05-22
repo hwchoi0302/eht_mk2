@@ -196,12 +196,26 @@ def main():
     api_key = ""
     secret_key = ""
     if not args.dry_run:
-        # env 파일 등에서 키 로드 시도
+        # 1. 스크립트 실행 경로 기준 .env 로드 (직접 파일 파싱으로 100% 보장)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        env_path = os.path.join(script_dir, '.env')
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, 'r', encoding='utf-8') as env_f:
+                    for line in env_f:
+                        line = line.strip()
+                        if line and not line.startswith('#') and '=' in line:
+                            k, v = line.split('=', 1)
+                            # 값 앞뒤의 따옴표 및 공백 제거
+                            val = v.strip().strip("'").strip('"')
+                            os.environ[k.strip()] = val
+            except Exception as e:
+                print(f"⚠️ .env 직접 파싱 중 오류 발생: {e}")
+
+        # 2. 추가적으로 dotenv 모듈이 설치되어 있다면 로드 (보안/보완용)
         try:
             from dotenv import load_dotenv
-            # 스크립트 실행 경로 기준 .env 로드
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            load_dotenv(os.path.join(script_dir, '.env'))
+            load_dotenv(env_path)
         except ImportError:
             pass
         

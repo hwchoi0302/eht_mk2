@@ -1,10 +1,10 @@
 {
     "running": true,
     "symbol": "BTC/USDT",
-    "timeframe": "4h",
-    "is_futures": false,
+    "timeframe": "1h",
+    "is_futures": true,
     "strategy_name": null,
     "strategy_params": null,
-    "use_testnet": false,
-    "last_check": "2026-05-23T02:28:18.599458"
+    "use_testnet": true,
+    "last_check": "2026-05-23T03:36:42.527325"
 }

@@ -199,14 +199,29 @@ def main():
         # env 파일 등에서 키 로드 시도
         try:
             from dotenv import load_dotenv
-            load_dotenv()
+            # 스크립트 실행 경로 기준 .env 로드
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            load_dotenv(os.path.join(script_dir, '.env'))
         except ImportError:
             pass
-        api_key = os.getenv("BINANCE_API_KEY", "")
-        secret_key = os.getenv("BINANCE_SECRET_KEY", "")
+        
+        if args.testnet:
+            api_key = os.getenv("BINANCE_TESTNET_API_KEY", "")
+            secret_key = os.getenv("BINANCE_TESTNET_SECRET_KEY", "")
+            if not api_key:
+                api_key = os.getenv("BINANCE_API_KEY", "")
+                secret_key = os.getenv("BINANCE_SECRET_KEY", "")
+        else:
+            api_key = os.getenv("BINANCE_REAL_API_KEY", "")
+            secret_key = os.getenv("BINANCE_REAL_SECRET_KEY", "")
+            if not api_key:
+                api_key = os.getenv("BINANCE_API_KEY", "")
+                secret_key = os.getenv("BINANCE_SECRET_KEY", "")
+
         if not api_key or not secret_key:
-            print("⚠️ BINANCE_API_KEY 및 BINANCE_SECRET_KEY 환경 변수가 설정되지 않았습니다.")
-            print("   거래소와의 통신이 필요한 경우 에러가 발생할 수 있습니다.")
+            mode_str = "TESTNET" if args.testnet else "실거래(REAL)"
+            print(f"⚠️ {mode_str}용 API 키 환경 변수가 설정되지 않았습니다.")
+            print(f"   .env 파일에 BINANCE_{'TESTNET' if args.testnet else 'REAL'}_API_KEY 및 SECRET_KEY가 정의되어 있는지 확인하세요.")
 
     bot = RegimeLiveTrader(
         api_key=api_key,

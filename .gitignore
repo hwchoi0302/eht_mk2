@@ -25,4 +25,7 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
-.pyc
+*.pyc
+
+reports_test/
+*.db

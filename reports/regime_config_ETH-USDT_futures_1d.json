@@ -1,0 +1,41 @@
+{
+  "symbol": "ETH/USDT",
+  "is_futures": true,
+  "timeframe": "1d",
+  "regime_strategies": {
+    "BULL": {
+      "strategy_name": "변동성 돌파",
+      "strategy_params": {
+        "stop_loss_pct": 0.005,
+        "take_profit_pct": 0.055,
+        "max_allocation_pct": 0.5,
+        "leverage": 3,
+        "lookback_period": 10,
+        "k": 0.2
+      }
+    },
+    "BEAR": {
+      "strategy_name": "변동성 돌파",
+      "strategy_params": {
+        "stop_loss_pct": 0.005,
+        "take_profit_pct": 0.055,
+        "max_allocation_pct": 0.5,
+        "leverage": 3,
+        "lookback_period": 10,
+        "k": 0.2
+      }
+    },
+    "SIDEWAYS": {
+      "strategy_name": "변동성 돌파",
+      "strategy_params": {
+        "stop_loss_pct": 0.005,
+        "take_profit_pct": 0.055,
+        "max_allocation_pct": 0.5,
+        "leverage": 3,
+        "lookback_period": 10,
+        "k": 0.2
+      }
+    }
+  },
+  "generated_at": "2026-05-23T02:49:05.960743"
+}

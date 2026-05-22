@@ -1,0 +1,7 @@
+ccxt>=4.0.0
+streamlit>=1.30.0
+pandas>=2.0.0
+numpy>=1.24.0
+plotly>=5.18.0
+optuna>=3.5.0
+python-dotenv>=1.0.0

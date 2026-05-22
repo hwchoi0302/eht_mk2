@@ -1,0 +1,41 @@
+{
+  "symbol": "ETH/USDT",
+  "is_futures": true,
+  "timeframe": "1h",
+  "regime_strategies": {
+    "BULL": {
+      "strategy_name": "듀얼 모멘텀",
+      "strategy_params": {
+        "stop_loss_pct": 0.048,
+        "take_profit_pct": 0.04,
+        "max_allocation_pct": 0.45000000000000007,
+        "leverage": 2,
+        "lookback_period": 10,
+        "trend_period": 112
+      }
+    },
+    "BEAR": {
+      "strategy_name": "듀얼 모멘텀",
+      "strategy_params": {
+        "stop_loss_pct": 0.048,
+        "take_profit_pct": 0.04,
+        "max_allocation_pct": 0.45000000000000007,
+        "leverage": 2,
+        "lookback_period": 10,
+        "trend_period": 112
+      }
+    },
+    "SIDEWAYS": {
+      "strategy_name": "듀얼 모멘텀",
+      "strategy_params": {
+        "stop_loss_pct": 0.048,
+        "take_profit_pct": 0.04,
+        "max_allocation_pct": 0.45000000000000007,
+        "leverage": 2,
+        "lookback_period": 10,
+        "trend_period": 112
+      }
+    }
+  },
+  "generated_at": "2026-05-23T02:49:05.959994"
+}

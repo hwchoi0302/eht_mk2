@@ -5,6 +5,6 @@
     "is_futures": true,
     "strategy_name": null,
     "strategy_params": null,
-    "use_testnet": true,
-    "last_check": "2026-05-24T02:22:57.037738"
+    "use_testnet": false,
+    "last_check": "2026-05-24T02:28:57.813405"
 }

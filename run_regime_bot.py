@@ -24,6 +24,36 @@ from live_trader import LiveTrader, start_bot
 from indicators import add_all_indicators
 from strategies import get_strategy_by_name
 
+# 파일 락을 위한 배타적 핸들 보관 변수
+lock_fp = None
+
+def acquire_lock(lock_file="bot.lock"):
+    global lock_fp
+    try:
+        import fcntl
+        lock_fp = open(lock_file, 'w')
+        fcntl.flock(lock_fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        lock_fp.write(str(os.getpid()))
+        lock_fp.flush()
+        return True
+    except ImportError:
+        # fcntl 모듈이 없는 환경 (Windows 등)
+        return True
+    except IOError:
+        return False
+
+def release_lock(lock_file="bot.lock"):
+    global lock_fp
+    if lock_fp:
+        try:
+            import fcntl
+            fcntl.flock(lock_fp, fcntl.LOCK_UN)
+            lock_fp.close()
+            if os.path.exists(lock_file):
+                os.remove(lock_file)
+        except Exception:
+            pass
+
 # 로그 설정
 logging.basicConfig(
     filename='regime_bot.log',
@@ -148,8 +178,15 @@ class RegimeLiveTrader(LiveTrader):
                 super().run_once()
 
         except Exception as e:
-            logging.error(f"Error in RegimeLiveTrader run_once loop: {e}", exc_info=True)
-            print(f"❌ 루프 실행 중 에러 발생: {e}")
+            err_msg = str(e).lower()
+            if "too many requests" in err_msg or "429" in err_msg or "ddos" in err_msg:
+                print("\n🚨 [Rate Limit 감지] 바이낸스 요청 제한을 초과했습니다.")
+                print("   IP 영구 차단을 방지하기 위해 5분(300초) 동안 쿨다운 대기에 들어갑니다...")
+                logging.warning(f"Rate Limit 429 detected. Sleeping for 300s. Error: {e}")
+                time.sleep(300)
+            else:
+                logging.error(f"Error in RegimeLiveTrader run_once loop: {e}", exc_info=True)
+                print(f"❌ 루프 실행 중 에러 발생: {e}")
 
     def _generate_dry_run_candles(self):
         """드라이런 테스트를 위해 모의 캔들 데이터를 생성합니다."""
@@ -237,6 +274,11 @@ def main():
             print(f"⚠️ {mode_str}용 API 키 환경 변수가 설정되지 않았습니다.")
             print(f"   .env 파일에 BINANCE_{'TESTNET' if args.testnet else 'REAL'}_API_KEY 및 SECRET_KEY가 정의되어 있는지 확인하세요.")
 
+    if not acquire_lock():
+        print("❌ 에러: 이미 다른 봇 인스턴스가 구동 중입니다. (bot.lock이 잠겨 있음)", flush=True)
+        print("   기존에 띄워둔 봇을 종료하거나 'pkill -f run_regime_bot.py' 명령으로 정리 후 실행하세요.", flush=True)
+        sys.exit(1)
+
     bot = RegimeLiveTrader(
         api_key=api_key,
         secret_key=secret_key,
@@ -250,6 +292,8 @@ def main():
     except KeyboardInterrupt:
         print("\n👋 봇이 사용자에 의해 수동 종료되었습니다.")
         bot.running = False
+    finally:
+        release_lock()
 
 
 if __name__ == "__main__":

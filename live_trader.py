@@ -59,7 +59,14 @@ class LiveTrader:
         })
         
         if self.use_testnet:
-            self.exchange.set_sandbox_mode(True)
+            try:
+                # CCXT의 새로운 Binance Demo Trading 지원 메서드 우선 시도 (선물/현물 통합)
+                self.exchange.enable_demo_trading(True)
+                logging.info("Initialized CCXT exchange with enable_demo_trading(True).")
+            except Exception as e:
+                # 백업용으로 기존 set_sandbox_mode 시도
+                logging.warning(f"enable_demo_trading failed: {e}. Falling back to set_sandbox_mode.")
+                self.exchange.set_sandbox_mode(True)
             logging.info("Initialized CCXT exchange in TESTNET/SANDBOX mode.")
         else:
             logging.info("Initialized CCXT exchange in REAL/PRODUCTION mode.")

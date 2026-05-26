@@ -4,6 +4,7 @@ import json
 import sqlite3
 import logging
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 import pandas as pd
 import ccxt
 
@@ -11,12 +12,18 @@ from data_manager import DataManager
 from indicators import add_all_indicators
 from strategies import get_strategy_by_name
 
-# Configure logging
-logging.basicConfig(
-    filename='live_trader.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+# Configure logging with rotation (10MB per file, keep 5 backups)
+# 핸들러 중복 방지: 이 모듈이 임포트될 때마다 중복 추가되지 않도록 조건 확인
+if not logging.getLogger().handlers:
+    _log_handler = RotatingFileHandler(
+        'live_trader.log',
+        maxBytes=10 * 1024 * 1024,  # 10MB
+        backupCount=5,
+        encoding='utf-8'
+    )
+    _log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    logging.getLogger().setLevel(logging.INFO)
+    logging.getLogger().addHandler(_log_handler)
 
 DB_NAME = "trading_data.db"
 STATUS_FILE = "bot_status.json"
@@ -309,15 +316,43 @@ class LiveTrader:
             # Set leverage before trade
             self.set_leverage()
             
-            # Place market order
+            # Place market order (recvWindow 확장으로 타임아웃 빈도 감소)
             side = 'buy' if direction == 'BUY' else 'sell'
-            order = self.exchange.create_market_order(self.symbol, side, amount_float)
+            order = self.exchange.create_market_order(
+                self.symbol, side, amount_float,
+                params={'recvWindow': 10000}
+            )
             
             fill_price = float(order.get('price', order.get('average', est_price)))
             filled_amount = float(order.get('filled', amount_float))
             
             self.log_trade("OPEN", direction, fill_price, filled_amount)
-            
+
+        except ccxt.RequestTimeout as e:
+            # -1007: 주문 상태 불명 → 포지션 조회로 실제 체결 여부 확인 후 복구
+            logging.warning(f"[open_position] RequestTimeout (-1007). Verifying position state... {e}")
+            time.sleep(3)  # 서버 처리 완료 대기
+            try:
+                pos_size, _ = self.get_position()
+                expected_dir = 1 if direction == 'BUY' else -1
+                already_filled = (expected_dir == 1 and pos_size > 0) or (expected_dir == -1 and pos_size < 0)
+                if already_filled:
+                    # 실제로는 체결됨 → 성공으로 처리
+                    logging.info(f"[Timeout Recovery] Position confirmed open ({pos_size}). Logging as success.")
+                    self.log_trade("OPEN", direction, est_price, abs(pos_size))
+                else:
+                    # 미체결 → 1회 재시도
+                    logging.warning("[Timeout Recovery] No position found. Retrying order once...")
+                    retry = self.exchange.create_market_order(
+                        self.symbol, side, amount_float,
+                        params={'recvWindow': 10000}
+                    )
+                    self.log_trade("OPEN", direction,
+                                   float(retry.get('price', retry.get('average', est_price))),
+                                   float(retry.get('filled', amount_float)))
+            except Exception as ve:
+                logging.error(f"[Timeout Recovery] open_position verify/retry failed: {ve}", exc_info=True)
+
         except Exception as e:
             logging.error(f"Failed to open position: {e}", exc_info=True)
 
@@ -339,17 +374,41 @@ class LiveTrader:
             
             logging.info(f"Closing position of size {abs_size} {self.symbol}. Reason: {reason}")
             
-            order = self.exchange.create_market_order(self.symbol, side, abs_size)
+            # recvWindow 확장으로 타임아웃 빈도 감소
+            order = self.exchange.create_market_order(
+                self.symbol, side, abs_size,
+                params={'recvWindow': 10000}
+            )
             
             fill_price = float(order.get('price', order.get('average', est_price)))
             filled_amount = float(order.get('filled', abs_size))
             
-            # Calculate PnL (for log)
-            # In live, we can fetch fill details, but let's approximate PnL
             pnl = 0.0
-            # For simple logging:
             self.log_trade(f"CLOSE_{reason}", "SELL" if current_size > 0 else "BUY", fill_price, filled_amount, pnl)
-            
+
+        except ccxt.RequestTimeout as e:
+            # 청산 타임아웃: 포지션이 이미 청산됐는지 확인 (중복 청산 방지)
+            logging.warning(f"[close_position] RequestTimeout (-1007). Verifying position state... {e}")
+            time.sleep(3)
+            try:
+                pos_size_after, _ = self.get_position()
+                if pos_size_after == 0 or (current_size > 0 and pos_size_after <= 0) or (current_size < 0 and pos_size_after >= 0):
+                    # 포지션이 이미 청산됨 → 성공으로 처리
+                    logging.info(f"[Timeout Recovery] Close confirmed (pos={pos_size_after}). Logging as success.")
+                    self.log_trade(f"CLOSE_{reason}", "SELL" if current_size > 0 else "BUY", est_price, abs_size, 0.0)
+                else:
+                    # 포지션 잔존 → 1회 재청산 시도
+                    logging.warning("[Timeout Recovery] Position still open. Retrying close once...")
+                    retry = self.exchange.create_market_order(
+                        self.symbol, side, abs_size,
+                        params={'recvWindow': 10000}
+                    )
+                    self.log_trade(f"CLOSE_{reason}", "SELL" if current_size > 0 else "BUY",
+                                   float(retry.get('price', retry.get('average', est_price))),
+                                   float(retry.get('filled', abs_size)), 0.0)
+            except Exception as ve:
+                logging.error(f"[Timeout Recovery] close_position verify/retry failed: {ve}", exc_info=True)
+
         except Exception as e:
             logging.error(f"Failed to close position: {e}", exc_info=True)
 

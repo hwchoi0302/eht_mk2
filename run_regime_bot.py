@@ -54,12 +54,19 @@ def release_lock(lock_file="bot.lock"):
         except Exception:
             pass
 
-# 로그 설정
-logging.basicConfig(
-    filename='regime_bot.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+# 로그 설정: 10MB마다 회전, 최대 5개 백업 유지
+from logging.handlers import RotatingFileHandler as _RegimeRotatingHandler
+_regime_log_handler = _RegimeRotatingHandler(
+    'regime_bot.log',
+    maxBytes=10 * 1024 * 1024,  # 10MB
+    backupCount=5,
+    encoding='utf-8'
 )
+_regime_log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+# live_trader 임포트 시 이미 root logger에 핸들러가 추가됐을 수 있으므로 기존 핸들러 제거 후 교체
+logging.getLogger().handlers.clear()
+logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().addHandler(_regime_log_handler)
 
 
 class RegimeLiveTrader(LiveTrader):

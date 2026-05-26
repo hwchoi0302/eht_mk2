@@ -174,8 +174,72 @@ class RegimeLiveTrader(LiveTrader):
                 signal = signals.iloc[-2]
                 print(f"   [DRY-RUN] 신호 계산 완료: {signal} (1=롱, -1=숏, 0=대기)")
             else:
-                # CCXT 통신을 통한 실제 거래 (LiveTrader의 run_once)
-                super().run_once()
+                # fetch한 df_ind를 그대로 재사용하여 신호 생성
+                # (super().run_once() 호출 시 발생하는 이중 fetch 제거)
+                signals = self.strategy.generate_signals(df_ind)
+                signal = signals.iloc[-2]
+
+                logging.info(f"Checking state. Last closed candle price: {last_closed_candle['close']}. Signal: {signal}")
+
+                # 현재 포지션 조회
+                pos_size, entry_price = self.get_position()
+                pos_dir = 1 if pos_size > 0 else (-1 if pos_size < 0 else 0)
+
+                # SL/TP 동적 체크
+                if pos_dir != 0:
+                    current_price = df_ind.iloc[-1]['close']
+                    stop_loss_pct = self.strategy.stop_loss_pct
+                    take_profit_pct = self.strategy.take_profit_pct
+
+                    if hasattr(self.strategy, 'get_dynamic_risk') and 'regime' in last_closed_candle:
+                        regime = last_closed_candle['regime']
+                        dyn_risk = self.strategy.get_dynamic_risk(regime)
+                        stop_loss_pct = dyn_risk.get('stop_loss_pct', stop_loss_pct)
+                        take_profit_pct = dyn_risk.get('take_profit_pct', take_profit_pct)
+
+                    trigger_exit = False
+                    exit_reason = ""
+
+                    if pos_dir == 1:
+                        sl_price = entry_price * (1 - stop_loss_pct)
+                        tp_price = entry_price * (1 + take_profit_pct)
+                        if current_price <= sl_price:
+                            trigger_exit = True
+                            exit_reason = "STOP_LOSS"
+                        elif current_price >= tp_price:
+                            trigger_exit = True
+                            exit_reason = "TAKE_PROFIT"
+                    elif pos_dir == -1:
+                        sl_price = entry_price * (1 + stop_loss_pct)
+                        tp_price = entry_price * (1 - take_profit_pct)
+                        if current_price >= sl_price:
+                            trigger_exit = True
+                            exit_reason = "STOP_LOSS"
+                        elif current_price <= tp_price:
+                            trigger_exit = True
+                            exit_reason = "TAKE_PROFIT"
+
+                    if trigger_exit:
+                        logging.info(f"Risk trigger: {exit_reason} at {current_price}. Closing position.")
+                        self.close_position(pos_size, current_price, exit_reason)
+                        return
+
+                # 신호 기반 주문 실행
+                if signal == 1 and pos_dir != 1:
+                    if pos_dir == -1:
+                        self.close_position(pos_size, last_closed_candle['close'], "SIGNAL_REVERSAL")
+                    self.open_position("BUY", last_closed_candle['close'])
+
+                elif signal == -1 and pos_dir != -1:
+                    if not self.is_futures:
+                        logging.info("Short signal ignored. Spot market does not support short positions.")
+                        return
+                    if pos_dir == 1:
+                        self.close_position(pos_size, last_closed_candle['close'], "SIGNAL_REVERSAL")
+                    self.open_position("SELL", last_closed_candle['close'])
+
+                elif signal == 0 and pos_dir != 0:
+                    self.close_position(pos_size, last_closed_candle['close'], "SIGNAL_EXIT")
 
         except Exception as e:
             err_msg = str(e).lower()

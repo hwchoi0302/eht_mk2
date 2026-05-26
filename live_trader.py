@@ -81,25 +81,24 @@ class LiveTrader:
 
     def _init_db(self):
         """Initializes SQLite database for trading logs."""
-        conn = sqlite3.connect(DB_NAME)
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS trade_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp INTEGER,
-                datetime TEXT,
-                symbol TEXT,
-                direction TEXT,
-                action TEXT,
-                price REAL,
-                amount REAL,
-                pnl REAL,
-                is_futures INTEGER,
-                environment TEXT
-            )
-        """)
-        conn.commit()
-        conn.close()
+        with sqlite3.connect(DB_NAME, timeout=10) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS trade_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp INTEGER,
+                    datetime TEXT,
+                    symbol TEXT,
+                    direction TEXT,
+                    action TEXT,
+                    price REAL,
+                    amount REAL,
+                    pnl REAL,
+                    is_futures INTEGER,
+                    environment TEXT
+                )
+            """)
+            conn.commit()
 
     def name_to_strategy_class(self, name):
         # Maps user-friendly names to internal class names
@@ -121,14 +120,14 @@ class LiveTrader:
         env_str = "TESTNET" if self.use_testnet else "REAL"
         is_futures_int = 1 if self.is_futures else 0
         
-        conn = sqlite3.connect(DB_NAME)
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO trade_logs (timestamp, datetime, symbol, direction, action, price, amount, pnl, is_futures, environment)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (ts, dt_str, self.symbol, direction, action, price, amount, pnl, is_futures_int, env_str))
-        conn.commit()
-        conn.close()
+        # with 컨텍스트 매니저를 사용해 예외 발생 시에도 연결이 반드시 닫히도록 보장
+        with sqlite3.connect(DB_NAME, timeout=10) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO trade_logs (timestamp, datetime, symbol, direction, action, price, amount, pnl, is_futures, environment)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (ts, dt_str, self.symbol, direction, action, price, amount, pnl, is_futures_int, env_str))
+            conn.commit()
         
         log_msg = f"TRADE EVENT: {action} {direction} {amount} {self.symbol} at {price} (PnL: {pnl}) [{env_str}]"
         logging.info(log_msg)
@@ -288,14 +287,6 @@ class LiveTrader:
             max_alloc = self.strategy.max_allocation_pct
             leverage = min(self.strategy.leverage if self.is_futures else 1, 3) # Force 3x cap
             
-            # Check dynamic risk adjustments
-            # We can read current regime to adjust size
-            conn = sqlite3.connect(DB_NAME)
-            # Find last regime
-            cursor = conn.cursor()
-            cursor.execute("SELECT open FROM candles ORDER BY timestamp DESC LIMIT 1") # Dummy read to check connectivity
-            conn.close()
-
             # Sizing calculation
             allocated_usdt = balance * max_alloc
             trade_value = allocated_usdt * leverage

@@ -87,6 +87,8 @@ class RegimeLiveTrader(LiveTrader):
         self.strategy_name = None
         self.strategy_params = None
         self.running = False
+        self._order_timeout_count = 0      # Circuit breaker: 연속 타임아웃 횟수
+        self._last_order_timeout_ts = 0   # 마지막 타임아웃 발생 시각 (epoch)
 
         if not self.dry_run:
             self._init_exchange()

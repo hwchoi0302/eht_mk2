@@ -42,7 +42,10 @@ class LiveTrader:
         self.exchange = None
         self.strategy = None
         self.running = False
+        self._order_timeout_count = 0      # Circuit breaker: 연속 타임아웃 횟수
+        self._last_order_timeout_ts = 0   # 마지막 타임아웃 발생 시각 (epoch)
         
+
         self._init_exchange()
         self._init_strategy()
         self._init_db()
@@ -62,6 +65,7 @@ class LiveTrader:
             'apiKey': self.api_key,
             'secret': self.secret_key,
             'enableRateLimit': True,
+            'timeout': 20000,  # 20초 클라이언트 측 요청 타임아웃
             'options': options
         })
         
@@ -290,6 +294,22 @@ class LiveTrader:
     def open_position(self, direction, est_price):
         """Calculates size and places an order to open a position."""
         try:
+            # ── Circuit Breaker ────────────────────────────────────────────────
+            # 연속 5회 이상 타임아웃 발생 시 5분간 주문 건너뜀 (서버 보호)
+            elapsed = time.time() - self._last_order_timeout_ts
+            if self._order_timeout_count >= 5 and elapsed < 300:
+                remaining = int(300 - elapsed)
+                logging.warning(
+                    f"[Circuit Breaker] {self._order_timeout_count}회 연속 타임아웃. "
+                    f"서버 보호를 위해 주문을 건너뜁니다. (잔여 제한시간: {remaining}초)"
+                )
+                return
+            elif self._order_timeout_count >= 5 and elapsed >= 300:
+                # 5분 경과 후 자동 리셋
+                logging.info("[Circuit Breaker] 제한시간 해제. 주문 시도를 재개합니다.")
+                self._order_timeout_count = 0
+            # ──────────────────────────────────────────────────────────────────
+
             balance = self.get_balance()
             max_alloc = self.strategy.max_allocation_pct
             leverage = min(self.strategy.leverage if self.is_futures else 1, 3) # Force 3x cap
@@ -326,35 +346,46 @@ class LiveTrader:
             fill_price = float(order.get('price', order.get('average', est_price)))
             filled_amount = float(order.get('filled', amount_float))
             
+            self._order_timeout_count = 0  # 성공 시 카운터 리셋
             self.log_trade("OPEN", direction, fill_price, filled_amount)
 
         except ccxt.RequestTimeout as e:
-            # -1007: 주문 상태 불명 → 포지션 조회로 실제 체결 여부 확인 후 복구
-            logging.warning(f"[open_position] RequestTimeout (-1007). Verifying position state... {e}")
+            # -1007: 주문 상태 불명 → 포지션 조회로 실제 체결 여부만 확인
+            # ⚠️ 즉시 재시도 금지: demo 서버가 408을 리턴하는 상황에서 재시도는 반드시 실패함
+            self._order_timeout_count += 1
+            self._last_order_timeout_ts = time.time()
+            logging.warning(
+                f"[open_position] RequestTimeout #{self._order_timeout_count} (-1007). "
+                f"포지션 상태 확인 중... (다음 루프에서 재시도)"
+            )
             time.sleep(3)  # 서버 처리 완료 대기
             try:
                 pos_size, _ = self.get_position()
                 expected_dir = 1 if direction == 'BUY' else -1
                 already_filled = (expected_dir == 1 and pos_size > 0) or (expected_dir == -1 and pos_size < 0)
                 if already_filled:
-                    # 실제로는 체결됨 → 성공으로 처리
-                    logging.info(f"[Timeout Recovery] Position confirmed open ({pos_size}). Logging as success.")
+                    # 실제로는 체결됨 → 성공으로 처리 후 카운터 리셋
+                    self._order_timeout_count = 0
+                    logging.info(f"[Timeout Recovery] 포지션 체결 확인 ({pos_size}). 성공으로 처리합니다.")
                     self.log_trade("OPEN", direction, est_price, abs(pos_size))
                 else:
-                    # 미체결 → 1회 재시도
-                    logging.warning("[Timeout Recovery] No position found. Retrying order once...")
-                    retry = self.exchange.create_market_order(
-                        self.symbol, side, amount_float,
-                        params={'recvWindow': 10000}
+                    # 미체결 → 즉시 재시도 없이 다음 루프에 위임
+                    msg = (
+                        f"[Timeout Recovery] 포지션 미확인 (count={self._order_timeout_count}). "
+                        f"다음 루프(약 30초 후)에 재시도합니다."
                     )
-                    self.log_trade("OPEN", direction,
-                                   float(retry.get('price', retry.get('average', est_price))),
-                                   float(retry.get('filled', amount_float)))
+                    if self._order_timeout_count >= 5:
+                        msg += (
+                            f" ⚠️ 연속 {self._order_timeout_count}회 타임아웃 — "
+                            f"Circuit Breaker 활성화. 향후 5분간 주문을 일시 중단합니다."
+                        )
+                    logging.warning(msg)
             except Exception as ve:
-                logging.error(f"[Timeout Recovery] open_position verify/retry failed: {ve}", exc_info=True)
+                logging.error(f"[Timeout Recovery] 포지션 확인 실패: {ve}", exc_info=True)
 
         except Exception as e:
             logging.error(f"Failed to open position: {e}", exc_info=True)
+
 
     def close_position(self, current_size, est_price, reason):
         """Places an order to close current position."""
@@ -384,30 +415,38 @@ class LiveTrader:
             filled_amount = float(order.get('filled', abs_size))
             
             pnl = 0.0
+            self._order_timeout_count = 0  # 성공 시 카운터 리셋
             self.log_trade(f"CLOSE_{reason}", "SELL" if current_size > 0 else "BUY", fill_price, filled_amount, pnl)
 
         except ccxt.RequestTimeout as e:
-            # 청산 타임아웃: 포지션이 이미 청산됐는지 확인 (중복 청산 방지)
-            logging.warning(f"[close_position] RequestTimeout (-1007). Verifying position state... {e}")
+            # 청산 타임아웃: 포지션이 이미 청산됐는지 확인 (즉시 재시도 금지)
+            self._order_timeout_count += 1
+            self._last_order_timeout_ts = time.time()
+            logging.warning(
+                f"[close_position] RequestTimeout #{self._order_timeout_count} (-1007). "
+                f"포지션 상태 확인 중... (다음 루프에서 재시도)"
+            )
             time.sleep(3)
             try:
                 pos_size_after, _ = self.get_position()
-                if pos_size_after == 0 or (current_size > 0 and pos_size_after <= 0) or (current_size < 0 and pos_size_after >= 0):
-                    # 포지션이 이미 청산됨 → 성공으로 처리
-                    logging.info(f"[Timeout Recovery] Close confirmed (pos={pos_size_after}). Logging as success.")
+                already_closed = (
+                    pos_size_after == 0
+                    or (current_size > 0 and pos_size_after <= 0)
+                    or (current_size < 0 and pos_size_after >= 0)
+                )
+                if already_closed:
+                    # 이미 청산됨 → 성공으로 처리 후 카운터 리셋
+                    self._order_timeout_count = 0
+                    logging.info(f"[Timeout Recovery] 청산 확인 (pos={pos_size_after}). 성공으로 처리합니다.")
                     self.log_trade(f"CLOSE_{reason}", "SELL" if current_size > 0 else "BUY", est_price, abs_size, 0.0)
                 else:
-                    # 포지션 잔존 → 1회 재청산 시도
-                    logging.warning("[Timeout Recovery] Position still open. Retrying close once...")
-                    retry = self.exchange.create_market_order(
-                        self.symbol, side, abs_size,
-                        params={'recvWindow': 10000}
+                    # 포지션 잔존 → 즉시 재시도 없이 다음 루프에 위임
+                    logging.warning(
+                        f"[Timeout Recovery] 포지션 잔존 (count={self._order_timeout_count}). "
+                        f"다음 루프(약 30초 후)에 재청산을 시도합니다."
                     )
-                    self.log_trade(f"CLOSE_{reason}", "SELL" if current_size > 0 else "BUY",
-                                   float(retry.get('price', retry.get('average', est_price))),
-                                   float(retry.get('filled', abs_size)), 0.0)
             except Exception as ve:
-                logging.error(f"[Timeout Recovery] close_position verify/retry failed: {ve}", exc_info=True)
+                logging.error(f"[Timeout Recovery] 포지션 확인 실패: {ve}", exc_info=True)
 
         except Exception as e:
             logging.error(f"Failed to close position: {e}", exc_info=True)

@@ -32,3 +32,6 @@ reports_test/
 
 # 테스트 스크립트
 test_*.py
+calculate_total_pnl.py
+check_income.py
+check_testnet_status.py

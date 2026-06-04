@@ -153,7 +153,9 @@ class Backtester:
                     position_dir = 0
             
             # 3. Check signals for entry or exit
-            signal = signals.iloc[i]
+            # IMPORTANT: Use signal from previous candle (i-1) to avoid look-ahead bias.
+            # In live trading, we only know the signal after a candle closes, then enter at the NEXT candle's open.
+            signal = signals.iloc[i - 1] if i > 0 else 0
             
             if position_dir == 0:  # Flat, look for entry
                 if signal == 1:  # Go Long

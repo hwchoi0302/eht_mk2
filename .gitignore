@@ -29,3 +29,6 @@ Thumbs.db
 
 reports_test/
 *.db
+
+# 테스트 스크립트
+test_*.py

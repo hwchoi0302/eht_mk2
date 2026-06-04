@@ -4,38 +4,40 @@
   "timeframe": "4h",
   "regime_strategies": {
     "BULL": {
-      "strategy_name": "변동성 돌파",
+      "strategy_name": "듀얼 모멘텀",
       "strategy_params": {
-        "stop_loss_pct": 0.047,
-        "take_profit_pct": 0.09999999999999999,
-        "max_allocation_pct": 0.25,
-        "leverage": 3,
-        "lookback_period": 14,
-        "k": 0.2
+        "stop_loss_pct": 0.041,
+        "take_profit_pct": 0.04,
+        "max_allocation_pct": 0.35,
+        "leverage": 2,
+        "lookback_period": 46,
+        "trend_period": 94
       }
     },
     "BEAR": {
-      "strategy_name": "변동성 돌파",
+      "strategy_name": "삼중 EMA",
       "strategy_params": {
-        "stop_loss_pct": 0.047,
-        "take_profit_pct": 0.09999999999999999,
-        "max_allocation_pct": 0.25,
-        "leverage": 3,
-        "lookback_period": 14,
-        "k": 0.2
+        "stop_loss_pct": 0.043,
+        "take_profit_pct": 0.04,
+        "max_allocation_pct": 0.4,
+        "leverage": 1,
+        "fast_period": 20,
+        "mid_period": 49,
+        "slow_period": 96
       }
     },
     "SIDEWAYS": {
-      "strategy_name": "변동성 돌파",
+      "strategy_name": "하이킨아시 추세추종",
       "strategy_params": {
-        "stop_loss_pct": 0.047,
-        "take_profit_pct": 0.09999999999999999,
-        "max_allocation_pct": 0.25,
-        "leverage": 3,
-        "lookback_period": 14,
-        "k": 0.2
+        "stop_loss_pct": 0.046,
+        "take_profit_pct": 0.025,
+        "max_allocation_pct": 0.45,
+        "leverage": 1,
+        "ha_ema_period": 34,
+        "consecutive_candles": 3
       }
     }
   },
-  "generated_at": "2026-05-23T02:49:05.958820"
+  "note": "Look-ahead Bias 수정 후 재최적화 (2026-06-05). 기존 k=0.2 변동성 돌파 설정 폐기.",
+  "generated_at": "2026-06-05T01:28:00"
 }

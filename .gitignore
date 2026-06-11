@@ -35,3 +35,7 @@ test_*.py
 calculate_total_pnl.py
 check_income.py
 check_testnet_status.py
+
+# 봇 런타임 파일 (실행 중 자동 생성, 커밋 제외)
+bot.lock
+bot_status.json

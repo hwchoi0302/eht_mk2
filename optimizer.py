@@ -98,6 +98,19 @@ def _build_params(trial: optuna.Trial, strategy_name: str, is_futures: bool) -> 
         params['ha_ema_period'] = trial.suggest_int('ha_ema_period', 10, 50)
         params['consecutive_candles'] = trial.suggest_int('consecutive_candles', 2, 5)
 
+    elif '동적결합' in n or 'switching' in n:
+        params['regime_confirm_candles'] = trial.suggest_int('regime_confirm_candles', 1, 5)
+        # BULL (Dual Momentum) params
+        params['bull_lookback'] = trial.suggest_int('bull_lookback', 10, 60)
+        params['bull_trend'] = trial.suggest_int('bull_trend', 50, 150)
+        # BEAR (Triple EMA) params
+        params['bear_fast'] = trial.suggest_int('bear_fast', 5, 20)
+        params['bear_mid'] = trial.suggest_int('bear_mid', params['bear_fast'] + 5, 50)
+        params['bear_slow'] = trial.suggest_int('bear_slow', params['bear_mid'] + 5, 120)
+        # SIDEWAYS (Z-Score) params
+        params['side_period'] = trial.suggest_int('side_period', 10, 40)
+        params['side_z_threshold'] = trial.suggest_float('side_z_threshold', 1.0, 3.0, step=0.1)
+
     return params
 
 

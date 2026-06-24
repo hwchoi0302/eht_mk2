@@ -2,6 +2,7 @@
   "symbol": "BTC/USDT",
   "is_futures": true,
   "timeframe": "4h",
+  "regime_confirm_candles": 2,
   "regime_strategies": {
     "BULL": {
       "strategy_name": "듀얼 모멘텀",
@@ -27,17 +28,17 @@
       }
     },
     "SIDEWAYS": {
-      "strategy_name": "하이킨아시 추세추종",
+      "strategy_name": "Z-Score 평균회귀",
       "strategy_params": {
-        "stop_loss_pct": 0.046,
-        "take_profit_pct": 0.025,
-        "max_allocation_pct": 0.45,
+        "stop_loss_pct": 0.04,
+        "take_profit_pct": 0.04,
+        "max_allocation_pct": 0.35,
         "leverage": 1,
-        "ha_ema_period": 34,
-        "consecutive_candles": 3
+        "period": 20,
+        "z_threshold": 2.0
       }
     }
   },
-  "note": "Look-ahead Bias 수정 후 재최적화 (2026-06-05). 기존 k=0.2 변동성 돌파 설정 폐기.",
-  "generated_at": "2026-06-05T01:28:00"
+  "note": "Look-ahead Bias 수정 후 재최적화 (2026-06-05). 기존 k=0.2 변동성 돌파 설정 폐기. 버퍼 및 평균회귀 전략 적용 (2026-06-24).",
+  "generated_at": "2026-06-24T15:55:00"
 }

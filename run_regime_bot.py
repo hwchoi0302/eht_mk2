@@ -89,6 +89,8 @@ class RegimeLiveTrader(LiveTrader):
         self.running = False
         self._order_timeout_count = 0      # Circuit breaker: 연속 타임아웃 횟수
         self._last_order_timeout_ts = 0   # 마지막 타임아웃 발생 시각 (epoch)
+        self.active_limit_order = None
+        self.last_exit_candle_timestamp = None
 
         if not self.dry_run:
             self._init_exchange()
@@ -148,6 +150,10 @@ class RegimeLiveTrader(LiveTrader):
 
     def run_once(self):
         """동적으로 국면을 감지하여 전략을 교체하고, 최신 캔들에 기반해 주문을 실행합니다."""
+        if self.active_limit_order is not None:
+            self.manage_pending_limit_order()
+            return
+
         try:
             # 1. 최근 캔들 데이터 Fetch
             if self.dry_run:
@@ -162,11 +168,41 @@ class RegimeLiveTrader(LiveTrader):
 
             # 2. 모든 기술적 지표 및 시장 국면 계산
             df_ind = add_all_indicators(df)
-
-            # 마지막 마감 캔들(즉, 2번째 전 행) 기준으로 국면 판정
-            # 마지막 인덱스는 현재 실시간으로 형성 중인 캔들이므로 리페인팅을 방지하기 위함입니다.
             last_closed_candle = df_ind.iloc[-2]
-            detected_regime = last_closed_candle['regime']
+
+            # 국면 전환 휩소 방지를 위해 confirmation buffer 적용
+            confirm_len = self.config.get('regime_confirm_candles', 1)
+            
+            if confirm_len > 1 and len(df_ind) > 0:
+                raw_regimes = df_ind['regime']
+                confirmed_regimes = pd.Series('SIDEWAYS', index=df_ind.index)
+                
+                # 시작 지점의 raw regime으로 초기화 (최초 상태)
+                current_regime = raw_regimes.iloc[0]
+                candidate_regime = current_regime
+                consecutive_count = 0
+                
+                for i in range(len(df_ind)):
+                    raw_reg = raw_regimes.iloc[i]
+                    if raw_reg == current_regime:
+                        candidate_regime = current_regime
+                        consecutive_count = 0
+                    else:
+                        if raw_reg == candidate_regime:
+                            consecutive_count += 1
+                        else:
+                            candidate_regime = raw_reg
+                            consecutive_count = 1
+                        
+                        if consecutive_count >= confirm_len:
+                            current_regime = candidate_regime
+                            consecutive_count = 0
+                            
+                    confirmed_regimes.iloc[i] = current_regime
+                
+                detected_regime = confirmed_regimes.iloc[-2]
+            else:
+                detected_regime = last_closed_candle['regime']
 
             # 3. 국면 변경 시 전략 스위칭
             if self.current_regime is None or detected_regime != self.current_regime:
@@ -231,13 +267,21 @@ class RegimeLiveTrader(LiveTrader):
                     if trigger_exit:
                         logging.info(f"Risk trigger: {exit_reason} at {current_price}. Closing position.")
                         self.close_position(pos_size, current_price, exit_reason)
+                        self.last_exit_candle_timestamp = last_closed_candle['timestamp']
                         return
+
+                # Check for SL/TP cooldown on the current candle
+                current_candle_ts = last_closed_candle['timestamp']
+                is_cooldown = (self.last_exit_candle_timestamp is not None and current_candle_ts == self.last_exit_candle_timestamp)
 
                 # 신호 기반 주문 실행
                 if signal == 1 and pos_dir != 1:
                     if pos_dir == -1:
                         self.close_position(pos_size, last_closed_candle['close'], "SIGNAL_REVERSAL")
-                    self.open_position("BUY", last_closed_candle['close'])
+                    if not is_cooldown:
+                        self.open_position("BUY", last_closed_candle['close'])
+                    else:
+                        logging.info("Skipping Long entry due to SL/TP cooldown on the current candle.")
 
                 elif signal == -1 and pos_dir != -1:
                     if not self.is_futures:
@@ -245,7 +289,10 @@ class RegimeLiveTrader(LiveTrader):
                         return
                     if pos_dir == 1:
                         self.close_position(pos_size, last_closed_candle['close'], "SIGNAL_REVERSAL")
-                    self.open_position("SELL", last_closed_candle['close'])
+                    if not is_cooldown:
+                        self.open_position("SELL", last_closed_candle['close'])
+                    else:
+                        logging.info("Skipping Short entry due to SL/TP cooldown on the current candle.")
 
                 elif signal == 0 and pos_dir != 0:
                     self.close_position(pos_size, last_closed_candle['close'], "SIGNAL_EXIT")

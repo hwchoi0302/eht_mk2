@@ -32,9 +32,9 @@ reports_test/
 
 # 테스트 스크립트
 test_*.py
-calculate_total_pnl.py
-check_income.py
-check_testnet_status.py
+tools/calculate_total_pnl.py
+tools/check_income.py
+tools/check_testnet_status.py
 
 # 봇 런타임 파일 (실행 중 자동 생성, 커밋 제외)
 bot.lock

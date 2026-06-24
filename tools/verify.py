@@ -1,6 +1,12 @@
+import os
 import sys
 from datetime import datetime, timedelta
 import pandas as pd
+
+# Add parent directory to path so we can import modules
+workspace_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if workspace_path not in sys.path:
+    sys.path.insert(0, workspace_path)
 
 print("1. Testing imports...")
 try:

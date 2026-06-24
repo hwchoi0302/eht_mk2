@@ -694,6 +694,165 @@ class HeikinAshiTrendStrategy(BaseStrategy):
         return signals
 
 
+class RegimeSwitchingStrategy(BaseStrategy):
+    """시장국면별 동적 전략 전환 결합 전략 (백테스팅 용)
+    BULL ➔ DualMomentumStrategy
+    BEAR ➔ TripleEMAStrategy
+    SIDEWAYS ➔ ZScoreMeanReversionStrategy (평균회귀로 교체)
+    국면 전환 시 휩소 방지를 위해 'regime_confirm_candles' 동안 관찰 후 전환하며, 
+    국면 전환 시 0 시그널을 출력하여 강제 청산을 재현합니다.
+    """
+    def __init__(self, **kwargs):
+        params = {
+            'regime_confirm_candles': 3,  # 국면 전환 컨펌 캔들 수 (버퍼)
+            'leverage': 1,
+            'stop_loss_pct': 0.04,
+            'take_profit_pct': 0.04,
+            'max_allocation_pct': 0.35,
+            # BULL (Dual Momentum) params
+            'bull_lookback': 46,
+            'bull_trend': 94,
+            # BEAR (Triple EMA) params
+            'bear_fast': 20,
+            'bear_mid': 49,
+            'bear_slow': 96,
+            # SIDEWAYS (Z-Score) params
+            'side_period': 20,
+            'side_z_threshold': 2.0,
+        }
+        params.update(kwargs)
+        super().__init__(name="시장국면 동적결합", **params)
+        
+        # 하위 전략 인스턴스 생성
+        self.bull_strat = DualMomentumStrategy(
+            lookback_period=self.parameters['bull_lookback'],
+            trend_period=self.parameters['bull_trend'],
+            leverage=self.parameters.get('bull_leverage', self.parameters['leverage']),
+            stop_loss_pct=self.parameters['stop_loss_pct'],
+            take_profit_pct=self.parameters['take_profit_pct'],
+            max_allocation_pct=self.parameters['max_allocation_pct']
+        )
+        
+        self.bear_strat = TripleEMAStrategy(
+            fast_period=self.parameters['bear_fast'],
+            mid_period=self.parameters['bear_mid'],
+            slow_period=self.parameters['bear_slow'],
+            leverage=self.parameters.get('bear_leverage', self.parameters['leverage']),
+            stop_loss_pct=self.parameters['stop_loss_pct'],
+            take_profit_pct=self.parameters['take_profit_pct'],
+            max_allocation_pct=self.parameters['max_allocation_pct']
+        )
+        
+        self.side_strategy_type = self.parameters.get('side_strategy_type', 'zscore')
+        if self.side_strategy_type == 'heikin':
+            self.side_strat = HeikinAshiTrendStrategy(
+                ha_ema_period=self.parameters.get('side_ema_period', 34),
+                consecutive_candles=self.parameters.get('side_consecutive', 3),
+                leverage=self.parameters.get('side_leverage', self.parameters['leverage']),
+                stop_loss_pct=self.parameters['stop_loss_pct'],
+                take_profit_pct=self.parameters['take_profit_pct'],
+                max_allocation_pct=self.parameters['max_allocation_pct']
+            )
+        else:
+            self.side_strat = ZScoreMeanReversionStrategy(
+                period=self.parameters['side_period'],
+                z_threshold=self.parameters['side_z_threshold'],
+                leverage=self.parameters.get('side_leverage', self.parameters['leverage']),
+                stop_loss_pct=self.parameters['stop_loss_pct'],
+                take_profit_pct=self.parameters['take_profit_pct'],
+                max_allocation_pct=self.parameters['max_allocation_pct']
+            )
+
+    def generate_signals(self, df):
+        self._risk_index = 0
+        # 1. 국면 계산 (버퍼 포함)
+        from indicators import classify_market_regime
+        raw_regimes = classify_market_regime(df)
+        
+        # 버퍼/컨펌 로직 적용
+        confirm_len = self.parameters['regime_confirm_candles']
+        confirmed_regimes = pd.Series('SIDEWAYS', index=df.index)
+        
+        current_regime = 'SIDEWAYS'
+        candidate_regime = 'SIDEWAYS'
+        consecutive_count = 0
+        
+        for i in range(len(df)):
+            raw_reg = raw_regimes.iloc[i]
+            if raw_reg == current_regime:
+                candidate_regime = current_regime
+                consecutive_count = 0
+            else:
+                if raw_reg == candidate_regime:
+                    consecutive_count += 1
+                else:
+                    candidate_regime = raw_reg
+                    consecutive_count = 1
+                
+                if consecutive_count >= confirm_len:
+                    current_regime = candidate_regime
+                    consecutive_count = 0
+                    
+            confirmed_regimes.iloc[i] = current_regime
+            
+        self.confirmed_regimes = confirmed_regimes
+        
+        # 2. 각 하위 전략의 시그널 생성
+        bull_signals = self.bull_strat.generate_signals(df)
+        bear_signals = self.bear_strat.generate_signals(df)
+        side_signals = self.side_strat.generate_signals(df)
+        
+        # 3. 결합 시그널 생성
+        signals = pd.Series(0, index=df.index)
+        
+        active_regime = confirmed_regimes.iloc[0]
+        for i in range(len(df)):
+            cur_reg = confirmed_regimes.iloc[i]
+            
+            # 국면 전환 시 0 시그널(강제 청산) 출력
+            if cur_reg != active_regime:
+                signals.iloc[i] = 0
+                active_regime = cur_reg
+                continue
+                
+            # 활성 국면에 따른 시그널 할당
+            if cur_reg == 'BULL':
+                signals.iloc[i] = bull_signals.iloc[i]
+            elif cur_reg == 'BEAR':
+                signals.iloc[i] = bear_signals.iloc[i]
+            else:
+                signals.iloc[i] = side_signals.iloc[i]
+                
+        # 워밍업 기간 처리
+        warmup = max(self.parameters['bull_trend'], self.parameters['bear_slow'], self.parameters['side_period'])
+        signals.iloc[:warmup] = 0
+        
+        return signals
+
+    def get_dynamic_risk(self, current_regime):
+        idx = getattr(self, '_risk_index', 0)
+        
+        if hasattr(self, 'confirmed_regimes') and idx < len(self.confirmed_regimes):
+            confirmed_reg = self.confirmed_regimes.iloc[idx]
+            self._risk_index = idx + 1
+        else:
+            confirmed_reg = current_regime
+            
+        if confirmed_reg == 'BULL':
+            strat = self.bull_strat
+        elif confirmed_reg == 'BEAR':
+            strat = self.bear_strat
+        else:
+            strat = self.side_strat
+            
+        return {
+            'leverage': strat.parameters.get('leverage', self.parameters['leverage']),
+            'stop_loss_pct': strat.parameters.get('stop_loss_pct', self.parameters['stop_loss_pct']),
+            'take_profit_pct': strat.parameters.get('take_profit_pct', self.parameters['take_profit_pct']),
+            'max_allocation_pct': strat.parameters.get('max_allocation_pct', self.parameters['max_allocation_pct']),
+        }
+
+
 # ─────────────────────────────────────────────
 #  전략 레지스트리
 # ─────────────────────────────────────────────
@@ -714,6 +873,7 @@ ALL_STRATEGY_NAMES = [
     "듀얼 모멘텀",
     "Z-Score 평균회귀",
     "하이킨아시 추세추종",
+    "시장국면 동적결합",
 ]
 
 STRATEGY_REGISTRY = {
@@ -732,11 +892,13 @@ STRATEGY_REGISTRY = {
     "듀얼 모멘텀": DualMomentumStrategy,
     "Z-Score 평균회귀": ZScoreMeanReversionStrategy,
     "하이킨아시 추세추종": HeikinAshiTrendStrategy,
+    "시장국면 동적결합": RegimeSwitchingStrategy,
     # 영어 이름 (이전 버전 호환)
     "EMA Crossover": EMACrossStrategy,
     "RSI + Bollinger Bands": RSIBBStrategy,
     "Volatility Breakout": VolatilityBreakoutStrategy,
     "Adaptive Regime Strategy": AdaptiveRegimeStrategy,
+    "Regime Switching Strategy": RegimeSwitchingStrategy,
     # 클래스명 직접 매핑 (국면 봇 등에서 사용)
     "EMACrossStrategy": EMACrossStrategy,
     "RSIBBStrategy": RSIBBStrategy,
@@ -752,6 +914,7 @@ STRATEGY_REGISTRY = {
     "DualMomentumStrategy": DualMomentumStrategy,
     "ZScoreMeanReversionStrategy": ZScoreMeanReversionStrategy,
     "HeikinAshiTrendStrategy": HeikinAshiTrendStrategy,
+    "RegimeSwitchingStrategy": RegimeSwitchingStrategy,
 }
 
 

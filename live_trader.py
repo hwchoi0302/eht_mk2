@@ -44,6 +44,8 @@ class LiveTrader:
         self.running = False
         self._order_timeout_count = 0      # Circuit breaker: 연속 타임아웃 횟수
         self._last_order_timeout_ts = 0   # 마지막 타임아웃 발생 시각 (epoch)
+        self.active_limit_order = None
+        self.last_exit_candle_timestamp = None
         
 
         self._init_exchange()
@@ -196,8 +198,131 @@ class LiveTrader:
             except Exception as e:
                 logging.warning(f"Could not set leverage: {e}. It might already be set or not supported on this asset.")
 
+    def manage_pending_limit_order(self):
+        """Manages active pending entry limit orders, retrying up to 4 times and falling back to market order."""
+        try:
+            order_info = self.active_limit_order
+            order_id = order_info['id']
+            direction = order_info['direction']
+            total_amount = order_info['amount']
+            symbol = self.symbol
+            
+            # Fetch order details
+            order = self.exchange.fetch_order(order_id, symbol)
+            status = order.get('status')
+            filled = float(order.get('filled', 0.0) or 0.0)
+            remaining = float(order.get('remaining', total_amount - filled) or (total_amount - filled))
+            
+            if status == 'closed' or remaining <= 0:
+                logging.info(f"Pending limit order {order_id} fully filled.")
+                fill_price = float(order.get('price') or order.get('average') or order_info['price'])
+                self.log_trade("OPEN", direction, fill_price, total_amount)
+                self.active_limit_order = None
+                return
+                
+            if status in ['canceled', 'expired']:
+                logging.warning(f"Pending limit order {order_id} was {status} on exchange.")
+                if filled > 0:
+                    fill_price = float(order.get('price') or order.get('average') or order_info['price'])
+                    self.log_trade("OPEN", direction, fill_price, filled)
+                self.active_limit_order = None
+                return
+                
+            # Increment retry count
+            order_info['retry_count'] += 1
+            retry_count = order_info['retry_count']
+            logging.info(f"Checking pending limit order {order_id}. Retry count: {retry_count}/4. Status: {status}, Filled: {filled}/{total_amount}")
+            
+            if retry_count >= 4:
+                # 5th check: Cancel and place market order for the remaining amount
+                logging.info(f"Limit order {order_id} reached 5th check. Canceling and falling back to market order.")
+                try:
+                    self.exchange.cancel_order(order_id, symbol)
+                    # Fetch one last time to get final filled/remaining stats
+                    time.sleep(1)
+                    order = self.exchange.fetch_order(order_id, symbol)
+                    filled = float(order.get('filled', filled) or filled)
+                    remaining = float(order.get('remaining', total_amount - filled) or (total_amount - filled))
+                except Exception as ce:
+                    logging.error(f"Error canceling order {order_id}: {ce}")
+                    # In case cancel fails (e.g. order filled in the last moment), assume filled
+                    pos_size, _ = self.get_position()
+                
+                # Reset active limit order
+                self.active_limit_order = None
+                
+                if remaining > 0.0001: # Check if there is still remaining amount to buy/sell
+                    logging.info(f"Placing fallback market order for remaining size {remaining} {symbol}")
+                    side = 'buy' if direction == 'BUY' else 'sell'
+                    ticker = self.exchange.fetch_ticker(symbol)
+                    est_price = float(ticker['last'])
+                    
+                    amount_precision = float(self.exchange.amount_to_precision(symbol, remaining))
+                    if amount_precision > 0:
+                        order_market = self.exchange.create_market_order(
+                            symbol, side, amount_precision,
+                            params={'recvWindow': 10000}
+                        )
+                        fill_price = float(order_market.get('price') or order_market.get('average') or est_price)
+                        filled_amount = float(order_market.get('filled') or amount_precision)
+                        self.log_trade("OPEN", direction, fill_price, filled_amount + filled)
+                    elif filled > 0:
+                        self.log_trade("OPEN", direction, order_info['price'], filled)
+                else:
+                    fill_price = float(order.get('price') or order.get('average') or order_info['price'])
+                    self.log_trade("OPEN", direction, fill_price, total_amount)
+            else:
+                # Retry count is 1, 2, or 3. Cancel and place new limit order closer to the market (price chase)
+                ticker = self.exchange.fetch_ticker(symbol)
+                new_price = float(ticker['bid'] if direction == 'BUY' else ticker['ask'])
+                
+                old_price = order_info['price']
+                price_diff_pct = abs(new_price - old_price) / old_price
+                
+                # If price changed by more than 0.05% (to avoid excessive cancel/replaces on tiny movements)
+                if price_diff_pct > 0.0005:
+                    logging.info(f"Price moved from {old_price} to {new_price}. Replacing limit order.")
+                    try:
+                        self.exchange.cancel_order(order_id, symbol)
+                        time.sleep(1)
+                        order = self.exchange.fetch_order(order_id, symbol)
+                        filled = float(order.get('filled', filled) or filled)
+                        remaining = float(order.get('remaining', total_amount - filled) or (total_amount - filled))
+                        
+                        if remaining > 0.0001:
+                            side = 'buy' if direction == 'BUY' else 'sell'
+                            price_str = self.exchange.price_to_precision(symbol, new_price)
+                            price_float = float(price_str)
+                            amount_str = self.exchange.amount_to_precision(symbol, remaining)
+                            amount_float_rounded = float(amount_str)
+                            
+                            if amount_float_rounded > 0:
+                                new_order = self.exchange.create_limit_order(
+                                    symbol, side, amount_float_rounded, price_float,
+                                    params={'recvWindow': 10000}
+                                )
+                                order_info['id'] = new_order['id']
+                                order_info['price'] = price_float
+                                order_info['amount'] = remaining + filled # Keep total target amount tracked
+                                logging.info(f"Replaced limit order with {new_order['id']} at {price_float} for remaining {amount_float_rounded}")
+                            elif filled > 0:
+                                self.log_trade("OPEN", direction, old_price, filled)
+                                self.active_limit_order = None
+                        else:
+                            fill_price = float(order.get('price') or order.get('average') or order_info['price'])
+                            self.log_trade("OPEN", direction, fill_price, total_amount)
+                            self.active_limit_order = None
+                    except Exception as re:
+                        logging.error(f"Error replacing limit order: {re}")
+        except Exception as e:
+            logging.error(f"Error in manage_pending_limit_order: {e}", exc_info=True)
+
     def run_once(self):
         """Runs a single iteration of fetching candles, computing signals, and placing trades."""
+        if self.active_limit_order is not None:
+            self.manage_pending_limit_order()
+            return
+            
         try:
             # 1. Fetch latest candles (warmup + extra)
             # Fetch 200 candles to calculate indicators accurately
@@ -261,8 +386,13 @@ class LiveTrader:
                 if trigger_exit:
                     logging.info(f"Risk trigger: {exit_reason} at {current_price}. Closing position.")
                     self.close_position(pos_size, current_price, exit_reason)
+                    self.last_exit_candle_timestamp = last_closed_candle['timestamp']
                     return
             
+            # Check for SL/TP cooldown on the current candle
+            current_candle_ts = last_closed_candle['timestamp']
+            is_cooldown = (self.last_exit_candle_timestamp is not None and current_candle_ts == self.last_exit_candle_timestamp)
+
             # 5. Order execution based on signals
             if signal == 1 and pos_dir != 1:
                 # Settle current opposite position first
@@ -270,7 +400,10 @@ class LiveTrader:
                     self.close_position(pos_size, last_closed_candle['close'], "SIGNAL_REVERSAL")
                     
                 # Open Long
-                self.open_position("BUY", last_closed_candle['close'])
+                if not is_cooldown:
+                    self.open_position("BUY", last_closed_candle['close'])
+                else:
+                    logging.info("Skipping Long entry due to SL/TP cooldown on the current candle.")
                 
             elif signal == -1 and pos_dir != -1:
                 if not self.is_futures:
@@ -282,7 +415,10 @@ class LiveTrader:
                     self.close_position(pos_size, last_closed_candle['close'], "SIGNAL_REVERSAL")
                     
                 # Open Short
-                self.open_position("SELL", last_closed_candle['close'])
+                if not is_cooldown:
+                    self.open_position("SELL", last_closed_candle['close'])
+                else:
+                    logging.info("Skipping Short entry due to SL/TP cooldown on the current candle.")
                 
             elif signal == 0 and pos_dir != 0:
                 # Close current position
@@ -292,7 +428,7 @@ class LiveTrader:
             logging.error(f"Error in run_once loop: {e}", exc_info=True)
 
     def open_position(self, direction, est_price):
-        """Calculates size and places an order to open a position."""
+        """Calculates size and places a limit order to open a position (with retry and market fallback)."""
         try:
             # ── Circuit Breaker ────────────────────────────────────────────────
             # 연속 5회 이상 타임아웃 발생 시 5분간 주문 건너뜀 (서버 보호)
@@ -310,6 +446,10 @@ class LiveTrader:
                 self._order_timeout_count = 0
             # ──────────────────────────────────────────────────────────────────
 
+            # Fetch latest ticker to get best bid/ask for limit order
+            ticker = self.exchange.fetch_ticker(self.symbol)
+            limit_price = float(ticker['bid'] if direction == 'BUY' else ticker['ask'])
+
             balance = self.get_balance()
             max_alloc = self.strategy.max_allocation_pct
             leverage = min(self.strategy.leverage if self.is_futures else 1, 3) # Force 3x cap
@@ -318,36 +458,45 @@ class LiveTrader:
             allocated_usdt = balance * max_alloc
             trade_value = allocated_usdt * leverage
             
-            # Convert to asset units
-            amount = trade_value / est_price
+            # Convert to asset units based on limit price
+            amount = trade_value / limit_price
             
             # Fetch market details to round amount and price correctly
             markets = self.exchange.load_markets()
-            market = markets[self.symbol]
-            amount = self.exchange.amount_to_precision(self.symbol, amount)
-            amount_float = float(amount)
+            amount_str = self.exchange.amount_to_precision(self.symbol, amount)
+            amount_float_rounded = float(amount_str)
             
-            if amount_float <= 0:
-                logging.warning(f"Calculated trade size is too small: {amount_float}")
+            price_str = self.exchange.price_to_precision(self.symbol, limit_price)
+            price_float = float(price_str)
+            
+            if amount_float_rounded <= 0:
+                logging.warning(f"Calculated trade size is too small: {amount_float_rounded}")
                 return
                 
-            logging.info(f"Attempting to open {direction} position of size {amount_float} {self.symbol} (value ~{trade_value} USDT)")
+            logging.info(f"Attempting to open {direction} limit position of size {amount_float_rounded} {self.symbol} at {price_float} (value ~{trade_value} USDT)")
             
             # Set leverage before trade
             self.set_leverage()
             
-            # Place market order (recvWindow 확장으로 타임아웃 빈도 감소)
+            # Place limit order
             side = 'buy' if direction == 'BUY' else 'sell'
-            order = self.exchange.create_market_order(
-                self.symbol, side, amount_float,
+            order = self.exchange.create_limit_order(
+                self.symbol, side, amount_float_rounded, price_float,
                 params={'recvWindow': 10000}
             )
             
-            fill_price = float(order.get('price', order.get('average', est_price)))
-            filled_amount = float(order.get('filled', amount_float))
+            order_id = order.get('id')
+            self.active_limit_order = {
+                'id': order_id,
+                'direction': direction,
+                'amount': amount_float_rounded,
+                'price': price_float,
+                'retry_count': 0,
+                'last_check_time': time.time()
+            }
+            logging.info(f"Placed entry limit order {order_id} at {price_float}. Checking status in subsequent loops.")
             
             self._order_timeout_count = 0  # 성공 시 카운터 리셋
-            self.log_trade("OPEN", direction, fill_price, filled_amount)
 
         except ccxt.RequestTimeout as e:
             # -1007: 주문 상태 불명 → 포지션 조회로 실제 체결 여부만 확인
@@ -366,8 +515,9 @@ class LiveTrader:
                 if already_filled:
                     # 실제로는 체결됨 → 성공으로 처리 후 카운터 리셋
                     self._order_timeout_count = 0
+                    self.active_limit_order = None
                     logging.info(f"[Timeout Recovery] 포지션 체결 확인 ({pos_size}). 성공으로 처리합니다.")
-                    self.log_trade("OPEN", direction, est_price, abs(pos_size))
+                    self.log_trade("OPEN", direction, limit_price, abs(pos_size))
                 else:
                     # 미체결 → 즉시 재시도 없이 다음 루프에 위임
                     msg = (
@@ -411,8 +561,10 @@ class LiveTrader:
                 params={'recvWindow': 10000}
             )
             
-            fill_price = float(order.get('price', order.get('average', est_price)))
-            filled_amount = float(order.get('filled', abs_size))
+            fill_price = order.get('price') or order.get('average') or est_price
+            fill_price = float(fill_price)
+            filled_amount = order.get('filled') or abs_size
+            filled_amount = float(filled_amount)
             
             pnl = 0.0
             self._order_timeout_count = 0  # 성공 시 카운터 리셋

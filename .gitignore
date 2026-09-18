@@ -32,10 +32,19 @@ reports_test/
 
 # 테스트 스크립트
 test_*.py
-tools/calculate_total_pnl.py
-tools/check_income.py
-tools/check_testnet_status.py
+
+# (tools/calculate_total_pnl.py, check_income.py, check_testnet_status.py 는
+#  이전에 여기서 제외돼 있었다. 셋 다 API 키를 .env에서만 읽고 코드에 비밀값이
+#  없으므로 커밋한다. calculate_total_pnl.py는 손익 재집계의 핵심이라 저장소에
+#  있어야 한다.)
 
 # 봇 런타임 파일 (실행 중 자동 생성, 커밋 제외)
 bot.lock
 bot_status.json
+
+# data/ 는 전부 런타임 산출물이다 (DB, 펀딩 캐시, 상태 파일).
+# 디렉토리 자체는 core/paths.py가 만들어 주므로 커밋하지 않는다.
+data/
+
+# 워크포워드 원자료(JSON)는 크고 재생성 가능하다. 리포트(.md)만 커밋한다.
+reports/wfa_*.json

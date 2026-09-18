@@ -143,44 +143,34 @@ def add_all_indicators(df):
 
 def classify_market_regime(df):
     """
-    Classifies the market regime for each row in the DataFrame.
-    - BULL: Price above 50 EMA and 50 EMA > 200 EMA (or ADX shows strong trend & EMA trend is up)
-    - BEAR: Price below 50 EMA and 50 EMA < 200 EMA (or ADX shows strong trend & EMA trend is down)
-    - SIDEWAYS: Price crossing EMA, ADX is low (< 22), or tight Bollinger Bands.
+    각 봉의 시장 국면을 판정한다.
+
+    - BULL:     ADX > 22 이고 종가 > EMA50 > EMA200
+    - BEAR:     ADX > 22 이고 종가 < EMA50 < EMA200
+    - SIDEWAYS: 그 외 전부 (ADX가 낮거나, EMA 배열이 엇갈리거나, 워밍업 구간)
+
+    예전에는 파이썬 for 루프로 한 봉씩 돌았다. 워크포워드 탐색은 이 함수를
+    수만 번 호출하므로(조합 × 폴드) 그 루프가 전체 탐색 시간을 지배했다.
+    아래는 같은 판정을 벡터화한 것이다 — 출력은 루프 버전과 완전히 동일하다.
     """
     close = df['close']
     ema_50 = calculate_ema(close, 50)
     ema_200 = calculate_ema(close, 200)
     adx = calculate_adx(df, 14)
-    
-    regimes = []
-    for i in range(len(df)):
-        # Handle warm-up periods where EMA or ADX might be NaN
-        if pd.isna(ema_200.iloc[i]) or pd.isna(adx.iloc[i]):
-            regimes.append('SIDEWAYS')
-            continue
-            
-        cur_close = close.iloc[i]
-        cur_ema_50 = ema_50.iloc[i]
-        cur_ema_200 = ema_200.iloc[i]
-        cur_adx = adx.iloc[i]
-        
-        # Trend indicators
-        trend_up = cur_close > cur_ema_50 and cur_ema_50 > cur_ema_200
-        trend_down = cur_close < cur_ema_50 and cur_ema_50 < cur_ema_200
-        
-        if cur_adx > 22:
-            if trend_up:
-                regimes.append('BULL')
-            elif trend_down:
-                regimes.append('BEAR')
-            else:
-                regimes.append('SIDEWAYS')
-        else:
-            # Low ADX -> Range bound
-            regimes.append('SIDEWAYS')
-            
+
+    # 워밍업 구간(EMA200/ADX가 NaN)은 판정하지 않고 SIDEWAYS로 둔다
+    valid = ema_200.notna() & adx.notna()
+    strong_trend = valid & (adx > 22)
+
+    trend_up = (close > ema_50) & (ema_50 > ema_200)
+    trend_down = (close < ema_50) & (ema_50 < ema_200)
+
+    regimes = np.where(
+        strong_trend & trend_up, 'BULL',
+        np.where(strong_trend & trend_down, 'BEAR', 'SIDEWAYS')
+    )
     return pd.Series(regimes, index=df.index)
+
 
 # Quick debug check
 if __name__ == "__main__":
@@ -201,3 +191,70 @@ if __name__ == "__main__":
     print(df_with_ind.columns)
     print("\nRegime Distribution:")
     print(df_with_ind['regime'].value_counts())
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 국면 확정 (라이브 / 백테스트 공용)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# 이전에는 이 로직이 run_regime_bot.py 안에 인라인으로만 있었고 백테스터는
+# 원시(raw) regime을 그대로 썼다. 국면 확정은 경로 의존적이라 두 경로의 결과가
+# 어긋났다. 이제 양쪽 모두 아래 confirm_regimes()를 호출한다.
+
+# 라이브에서 캔들을 몇 개 받아올지. EMA200 + ADX 워밍업에 200봉으로는 부족해서
+# 백테스트(전 이력)와 지표값 자체가 달라졌다. 넉넉히 받는다. (바이낸스 상한 1500)
+REGIME_LOOKBACK = 1000
+
+
+def confirm_regimes(raw_regimes, confirm_candles=1):
+    """휩소 방지용 확정 국면 시계열을 만든다.
+
+    새 국면이 연속 `confirm_candles`개 캔들 동안 유지되어야 전환을 인정한다.
+    경로 의존적이므로 라이브와 백테스트가 반드시 같은 입력 길이 위에서
+    같은 함수를 돌려야 결과가 일치한다.
+
+    Args:
+        raw_regimes: classify_market_regime()이 낸 'BULL'/'BEAR'/'SIDEWAYS' 시리즈
+        confirm_candles: 전환에 필요한 연속 캔들 수 (1이면 확정 없이 그대로)
+
+    Returns:
+        pd.Series: 확정된 국면 (입력과 같은 index)
+    """
+    raw = pd.Series(raw_regimes)
+    if len(raw) == 0:
+        return raw.copy()
+    if confirm_candles is None or confirm_candles <= 1:
+        return raw.copy()
+
+    values = raw.to_numpy()
+    confirmed = np.empty(len(values), dtype=object)
+
+    current = values[0]
+    candidate = current
+    streak = 0
+
+    for i, raw_reg in enumerate(values):
+        if raw_reg == current:
+            candidate = current
+            streak = 0
+        else:
+            if raw_reg == candidate:
+                streak += 1
+            else:
+                candidate = raw_reg
+                streak = 1
+            if streak >= confirm_candles:
+                current = candidate
+                streak = 0
+        confirmed[i] = current
+
+    return pd.Series(confirmed, index=raw.index)
+
+
+def add_confirmed_regime(df, confirm_candles=1):
+    """df에 'regime_confirmed' 컬럼을 붙여 돌려준다 (원본 비파괴)."""
+    df = df.copy()
+    if 'regime' not in df.columns:
+        df['regime'] = classify_market_regime(df)
+    df['regime_confirmed'] = confirm_regimes(df['regime'], confirm_candles)
+    return df

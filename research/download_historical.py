@@ -11,7 +11,11 @@ download_historical.py — 역사적 OHLCV 데이터 사전 다운로드
 
 import argparse
 from datetime import datetime, timedelta
-from data_manager import DataManager
+# --- 리포지토리 루트를 임포트 경로에 추가 (research/ 하위에서 실행되므로 필요) ---
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+# ---------------------------------------------------------------------------
+from core.data_manager import DataManager
 
 
 def download_all(days: int = 1095):

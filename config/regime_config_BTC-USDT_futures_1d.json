@@ -1,0 +1,44 @@
+{
+  "symbol": "BTC/USDT",
+  "is_futures": true,
+  "timeframe": "1d",
+  "regime_confirm_candles": 2,
+  "regime_strategies": {
+    "BULL": {
+      "strategy_name": "듀얼 모멘텀",
+      "strategy_params": {
+        "leverage": 2,
+        "stop_loss_pct": 0.08,
+        "take_profit_pct": 0.1,
+        "max_allocation_pct": 0.35,
+        "lookback_period": 46,
+        "trend_period": 94
+      }
+    },
+    "BEAR": {
+      "strategy_name": "삼중 EMA",
+      "strategy_params": {
+        "leverage": 2,
+        "stop_loss_pct": 0.08,
+        "take_profit_pct": 0.1,
+        "max_allocation_pct": 0.35,
+        "fast_period": 20,
+        "mid_period": 49,
+        "slow_period": 96
+      }
+    },
+    "SIDEWAYS": {
+      "strategy_name": "Z-Score 평균회귀",
+      "strategy_params": {
+        "leverage": 2,
+        "stop_loss_pct": 0.08,
+        "take_profit_pct": 0.1,
+        "max_allocation_pct": 0.35,
+        "period": 20,
+        "z_threshold": 2.0
+      }
+    }
+  },
+  "note": "워크포워드 재탐색 결과 (인샘플 6개월 → 아웃샘플 2개월 롤링, 16개 구간). 아웃샘플 +76.4%, 샤프 +0.73, 일관성 62%, 연 회전율 78회. 파라미터는 구간별 선택값의 합의치.",
+  "generated_at": "2026-09-18T01:19:00"
+}

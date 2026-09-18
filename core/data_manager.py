@@ -5,7 +5,9 @@ from datetime import datetime
 import pandas as pd
 import ccxt
 
-DB_NAME = "trading_data.db"
+from core.paths import DB_PATH
+
+DB_NAME = str(DB_PATH)
 
 class DataManager:
     def __init__(self, db_path=DB_NAME):

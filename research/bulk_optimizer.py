@@ -10,11 +10,16 @@ import numpy as np
 from datetime import datetime, timedelta
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from data_manager import DataManager
-from backtester import Backtester
-from indicators import add_all_indicators
-from optimizer import StrategyOptimizer
-from strategies import get_strategy_by_name
+# --- 리포지토리 루트를 임포트 경로에 추가 (research/ 하위에서 실행되므로 필요) ---
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+# ---------------------------------------------------------------------------
+from core.paths import DB_PATH
+from core.data_manager import DataManager
+from research.backtester import Backtester
+from core.indicators import add_all_indicators
+from research.optimizer import StrategyOptimizer
+from core.strategies import get_strategy_by_name
 
 
 # ─────────────────────────────────────────────
@@ -42,7 +47,7 @@ class BulkOptimizer:
 
     IS_RATIO = 0.70  # 훈련 기간 비율
 
-    def __init__(self, db_path: str = "trading_data.db", n_trials: int = 20):
+    def __init__(self, db_path: str = str(DB_PATH), n_trials: int = 20):
         self.db_path = db_path
         self.n_trials = n_trials
         self.data_manager = DataManager(db_path=db_path)

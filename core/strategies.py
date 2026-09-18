@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from indicators import add_all_indicators
+from core.indicators import add_all_indicators
 
 
 class BaseStrategy:
@@ -646,7 +646,7 @@ class HeikinAshiTrendStrategy(BaseStrategy):
 
     def generate_signals(self, df):
         if 'ha_open' not in df.columns:
-            from indicators import calculate_heikin_ashi
+            from core.indicators import calculate_heikin_ashi
             ha_df = calculate_heikin_ashi(df)
             df = df.copy()
             df['ha_open'] = ha_df['ha_open']
@@ -694,6 +694,67 @@ class HeikinAshiTrendStrategy(BaseStrategy):
         return signals
 
 
+
+class TrendFilterStrategy(BaseStrategy):
+    """장기 추세 필터 — 종가가 장기 EMA 위면 롱, 아래면 청산(또는 숏).
+
+    저회전율 벤치마크다. 워크포워드 결과 기존 전략들이 모두 비용을 넘지
+    못했고, 연 회전율 100~350회에서 왕복 8bp면 연 8~28%의 항구적 드래그가
+    생긴다. 이 전략은 장기 EMA를 기준으로만 방향을 바꾸므로 회전율이 한 자릿수
+    ~십몇 회에 그친다. "비용을 이길 수 없다면 비용을 내지 말자"는 쪽의 대조군.
+
+    allow_short=False면 롱온리(현물 매수 후 보유에 가까움), True면 EMA 아래에서
+    숏을 잡는다.
+    """
+    def __init__(self, **kwargs):
+        params = {
+            'ema_period': 200,
+            'allow_short': False,
+            'leverage': 1,
+            'stop_loss_pct': 0.15,      # 추세 전략이라 손절을 넓게 둔다
+            'take_profit_pct': 0.50,    # 사실상 추세가 꺾일 때까지 보유
+            'max_allocation_pct': 0.5,
+        }
+        params.update(kwargs)
+        super().__init__(name="장기 추세 필터", **params)
+
+    def generate_signals(self, df):
+        close = df['close']
+        period = int(self.parameters['ema_period'])
+        ema = close.ewm(span=period, adjust=False).mean()
+
+        signals = pd.Series(0, index=df.index)
+        signals[close > ema] = 1
+        if self.parameters['allow_short']:
+            signals[close < ema] = -1
+
+        signals.iloc[:period] = 0
+        return signals
+
+
+def _flatten_regime_config(regime_strategies):
+    """config의 regime_strategies 블록을 RegimeSwitchingStrategy 키워드로 변환.
+
+    설정 파일은 국면별로 전략 이름과 파라미터를 담고 있고, 이 클래스는
+    bull_lookback / bear_fast 같은 평평한 키를 쓴다. 그 사이를 여기서 잇는다.
+    """
+    mapping = {
+        'BULL': {'lookback_period': 'bull_lookback', 'trend_period': 'bull_trend',
+                 'leverage': 'bull_leverage'},
+        'BEAR': {'fast_period': 'bear_fast', 'mid_period': 'bear_mid',
+                 'slow_period': 'bear_slow', 'leverage': 'bear_leverage'},
+        'SIDEWAYS': {'period': 'side_period', 'z_threshold': 'side_z_threshold',
+                     'leverage': 'side_leverage'},
+    }
+    out = {}
+    for regime, keymap in mapping.items():
+        sp = (regime_strategies.get(regime) or {}).get('strategy_params', {})
+        for src, dst in keymap.items():
+            if src in sp:
+                out[dst] = sp[src]
+    return out
+
+
 class RegimeSwitchingStrategy(BaseStrategy):
     """시장국면별 동적 전략 전환 결합 전략 (백테스팅 용)
     BULL ➔ DualMomentumStrategy
@@ -721,7 +782,17 @@ class RegimeSwitchingStrategy(BaseStrategy):
             'side_z_threshold': 2.0,
         }
         params.update(kwargs)
+
+        # 라이브 설정(config/regime_config_*.json)의 regime_strategies 블록을
+        # 그대로 받을 수 있게 한다. 예전에는 이 키를 넘겨도 조용히 무시되고
+        # 아래 하드코딩 기본값으로 백테스트가 돌았다 — 즉 "라이브 설정 백테스트"가
+        # 실제로는 라이브 설정을 전혀 쓰지 않았다.
+        regime_strategies = params.pop('regime_strategies', None)
+        if regime_strategies:
+            params.update(_flatten_regime_config(regime_strategies))
+
         super().__init__(name="시장국면 동적결합", **params)
+        self.regime_strategies = regime_strategies
         
         # 하위 전략 인스턴스 생성
         self.bull_strat = DualMomentumStrategy(
@@ -763,38 +834,27 @@ class RegimeSwitchingStrategy(BaseStrategy):
                 max_allocation_pct=self.parameters['max_allocation_pct']
             )
 
+        # 국면별 리스크(레버리지/SL/TP/배분)를 설정 파일 값으로 맞춘다.
+        # get_dynamic_risk()가 하위 전략의 parameters를 읽기 때문에 필요하다.
+        if regime_strategies:
+            for key, strat in (('BULL', self.bull_strat), ('BEAR', self.bear_strat),
+                               ('SIDEWAYS', self.side_strat)):
+                sp = (regime_strategies.get(key) or {}).get('strategy_params', {})
+                for risk_key in ('leverage', 'stop_loss_pct', 'take_profit_pct', 'max_allocation_pct'):
+                    if risk_key in sp:
+                        strat.parameters[risk_key] = sp[risk_key]
+
     def generate_signals(self, df):
-        self._risk_index = 0
-        # 1. 국면 계산 (버퍼 포함)
-        from indicators import classify_market_regime
+        # 1. 국면 계산 (확정 버퍼 포함)
+        # 라이브 봇(live/regime_bot.py)과 완전히 같은 함수를 쓴다. 예전에는 이
+        # 확정 루프가 여기, run_regime_bot.py, 그리고 백테스터에 각각 따로
+        # 있었고 기본값(3 vs 2)과 초기 상태(SIDEWAYS vs 첫 봉의 원시 국면)가
+        # 서로 달라 같은 데이터에서도 다른 국면이 나왔다.
+        from core.indicators import classify_market_regime, confirm_regimes
+
         raw_regimes = classify_market_regime(df)
-        
-        # 버퍼/컨펌 로직 적용
-        confirm_len = self.parameters['regime_confirm_candles']
-        confirmed_regimes = pd.Series('SIDEWAYS', index=df.index)
-        
-        current_regime = 'SIDEWAYS'
-        candidate_regime = 'SIDEWAYS'
-        consecutive_count = 0
-        
-        for i in range(len(df)):
-            raw_reg = raw_regimes.iloc[i]
-            if raw_reg == current_regime:
-                candidate_regime = current_regime
-                consecutive_count = 0
-            else:
-                if raw_reg == candidate_regime:
-                    consecutive_count += 1
-                else:
-                    candidate_regime = raw_reg
-                    consecutive_count = 1
-                
-                if consecutive_count >= confirm_len:
-                    current_regime = candidate_regime
-                    consecutive_count = 0
-                    
-            confirmed_regimes.iloc[i] = current_regime
-            
+        confirmed_regimes = confirm_regimes(raw_regimes, self.parameters['regime_confirm_candles'])
+
         self.confirmed_regimes = confirmed_regimes
         
         # 2. 각 하위 전략의 시그널 생성
@@ -803,26 +863,22 @@ class RegimeSwitchingStrategy(BaseStrategy):
         side_signals = self.side_strat.generate_signals(df)
         
         # 3. 결합 시그널 생성
-        signals = pd.Series(0, index=df.index)
+        # 국면이 바뀌는 봉에서는 0(강제 청산)을 내고, 그 외에는 해당 국면의
+        # 하위 전략 신호를 그대로 쓴다. 파이썬 루프였던 것을 벡터화했다 —
+        # 워크포워드 탐색이 이 함수를 수천 번 호출하기 때문이다. 결과는 동일하다.
+        regime_arr = confirmed_regimes.to_numpy()
+
+        changed = np.empty(len(regime_arr), dtype=bool)
+        changed[0] = False                                   # 첫 봉은 '전환'이 아니다
+        changed[1:] = regime_arr[1:] != regime_arr[:-1]
+
+        combined = np.where(
+            regime_arr == 'BULL', bull_signals.to_numpy(),
+            np.where(regime_arr == 'BEAR', bear_signals.to_numpy(),
+                     side_signals.to_numpy())
+        )
+        signals = pd.Series(np.where(changed, 0, combined), index=df.index)
         
-        active_regime = confirmed_regimes.iloc[0]
-        for i in range(len(df)):
-            cur_reg = confirmed_regimes.iloc[i]
-            
-            # 국면 전환 시 0 시그널(강제 청산) 출력
-            if cur_reg != active_regime:
-                signals.iloc[i] = 0
-                active_regime = cur_reg
-                continue
-                
-            # 활성 국면에 따른 시그널 할당
-            if cur_reg == 'BULL':
-                signals.iloc[i] = bull_signals.iloc[i]
-            elif cur_reg == 'BEAR':
-                signals.iloc[i] = bear_signals.iloc[i]
-            else:
-                signals.iloc[i] = side_signals.iloc[i]
-                
         # 워밍업 기간 처리
         warmup = max(self.parameters['bull_trend'], self.parameters['bear_slow'], self.parameters['side_period'])
         signals.iloc[:warmup] = 0
@@ -830,21 +886,20 @@ class RegimeSwitchingStrategy(BaseStrategy):
         return signals
 
     def get_dynamic_risk(self, current_regime):
-        idx = getattr(self, '_risk_index', 0)
-        
-        if hasattr(self, 'confirmed_regimes') and idx < len(self.confirmed_regimes):
-            confirmed_reg = self.confirmed_regimes.iloc[idx]
-            self._risk_index = idx + 1
-        else:
-            confirmed_reg = current_regime
-            
-        if confirmed_reg == 'BULL':
+        """국면에 해당하는 하위 전략의 리스크 설정을 돌려준다.
+
+        예전에는 `self._risk_index`를 한 칸씩 올려가며 confirmed_regimes를
+        훑었다. 백테스터가 봉마다 정확히 한 번, 순서대로 호출한다는 가정에
+        전적으로 기대는 구조라 호출이 한 번만 어긋나도 엉뚱한 봉의 리스크를
+        적용했다. 이제 인자로 받은 국면만 쓴다 (무상태).
+        """
+        if current_regime == 'BULL':
             strat = self.bull_strat
-        elif confirmed_reg == 'BEAR':
+        elif current_regime == 'BEAR':
             strat = self.bear_strat
         else:
             strat = self.side_strat
-            
+
         return {
             'leverage': strat.parameters.get('leverage', self.parameters['leverage']),
             'stop_loss_pct': strat.parameters.get('stop_loss_pct', self.parameters['stop_loss_pct']),
@@ -874,6 +929,7 @@ ALL_STRATEGY_NAMES = [
     "Z-Score 평균회귀",
     "하이킨아시 추세추종",
     "시장국면 동적결합",
+    "장기 추세 필터",
 ]
 
 STRATEGY_REGISTRY = {
@@ -893,6 +949,7 @@ STRATEGY_REGISTRY = {
     "Z-Score 평균회귀": ZScoreMeanReversionStrategy,
     "하이킨아시 추세추종": HeikinAshiTrendStrategy,
     "시장국면 동적결합": RegimeSwitchingStrategy,
+    "장기 추세 필터": TrendFilterStrategy,
     # 영어 이름 (이전 버전 호환)
     "EMA Crossover": EMACrossStrategy,
     "RSI + Bollinger Bands": RSIBBStrategy,

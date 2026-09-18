@@ -18,10 +18,14 @@ import os
 from datetime import datetime, timedelta
 from itertools import product
 
-from data_manager import DataManager
-from bulk_optimizer import BulkOptimizer
-from report_generator import ReportGenerator
-from strategies import ALL_STRATEGY_NAMES
+# --- 리포지토리 루트를 임포트 경로에 추가 (research/ 하위에서 실행되므로 필요) ---
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+# ---------------------------------------------------------------------------
+from core.data_manager import DataManager
+from research.bulk_optimizer import BulkOptimizer
+from research.report_generator import ReportGenerator
+from core.strategies import ALL_STRATEGY_NAMES
 
 
 # ─────────────────────────────────────────────

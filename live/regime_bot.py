@@ -5,8 +5,8 @@ run_regime_bot.py — 시장 상황(Regime)별 동적 전략 전환 거래 봇 �
 각 시장 상황에 최적화된 전략으로 즉시 교체(기존 포지션 전량 청산)하며 자동 거래를 수행합니다.
 
 사용법:
-    python run_regime_bot.py reports/regime_config_BTC-USDT_spot_1h.json --dry-run
-    python run_regime_bot.py reports/regime_config_BTC-USDT_futures_4h.json --testnet
+    python main.py config/regime_config_BTC-USDT_spot_1h.json --dry-run
+    python main.py config/regime_config_BTC-USDT_futures_4h.json --testnet
 """
 
 import os
@@ -20,14 +20,15 @@ import pandas as pd
 import numpy as np
 
 # 기존 라이브 트레이더 임포트
-from live_trader import LiveTrader, start_bot
-from indicators import add_all_indicators
-from strategies import get_strategy_by_name
+from core.paths import REGIME_LOG, LOCK_FILE, CONFIG
+from live.trader import LiveTrader, start_bot
+from core.indicators import add_all_indicators, confirm_regimes, REGIME_LOOKBACK
+from core.strategies import get_strategy_by_name
 
 # 파일 락을 위한 배타적 핸들 보관 변수
 lock_fp = None
 
-def acquire_lock(lock_file="bot.lock"):
+def acquire_lock(lock_file=str(LOCK_FILE)):
     global lock_fp
     try:
         import fcntl
@@ -42,7 +43,7 @@ def acquire_lock(lock_file="bot.lock"):
     except IOError:
         return False
 
-def release_lock(lock_file="bot.lock"):
+def release_lock(lock_file=str(LOCK_FILE)):
     global lock_fp
     if lock_fp:
         try:
@@ -57,7 +58,7 @@ def release_lock(lock_file="bot.lock"):
 # 로그 설정: 10MB마다 회전, 최대 5개 백업 유지
 from logging.handlers import RotatingFileHandler as _RegimeRotatingHandler
 _regime_log_handler = _RegimeRotatingHandler(
-    'regime_bot.log',
+    str(REGIME_LOG),
     maxBytes=10 * 1024 * 1024,  # 10MB
     backupCount=5,
     encoding='utf-8'
@@ -89,7 +90,6 @@ class RegimeLiveTrader(LiveTrader):
         self.running = False
         self._order_timeout_count = 0      # Circuit breaker: 연속 타임아웃 횟수
         self._last_order_timeout_ts = 0   # 마지막 타임아웃 발생 시각 (epoch)
-        self.active_limit_order = None
         self.last_exit_candle_timestamp = None
 
         if not self.dry_run:
@@ -150,16 +150,12 @@ class RegimeLiveTrader(LiveTrader):
 
     def run_once(self):
         """동적으로 국면을 감지하여 전략을 교체하고, 최신 캔들에 기반해 주문을 실행합니다."""
-        if self.active_limit_order is not None:
-            self.manage_pending_limit_order()
-            return
-
         try:
             # 1. 최근 캔들 데이터 Fetch
             if self.dry_run:
                 df = self._generate_dry_run_candles()
             else:
-                candles = self.exchange.fetch_ohlcv(self.symbol, self.timeframe, limit=200)
+                candles = self.exchange.fetch_ohlcv(self.symbol, self.timeframe, limit=REGIME_LOOKBACK)
                 if not candles:
                     logging.warning("Failed to fetch candles from exchange.")
                     return
@@ -170,39 +166,13 @@ class RegimeLiveTrader(LiveTrader):
             df_ind = add_all_indicators(df)
             last_closed_candle = df_ind.iloc[-2]
 
-            # 국면 전환 휩소 방지를 위해 confirmation buffer 적용
+            # 국면 전환 휩소 방지를 위해 confirmation buffer 적용.
+            # 백테스터도 똑같이 core.indicators.confirm_regimes()를 호출한다 —
+            # 예전에는 이 로직이 여기 인라인으로만 있어서 백테스트는 원시 국면을
+            # 그대로 썼고, 경로 의존적인 확정 결과가 서로 어긋났다.
             confirm_len = self.config.get('regime_confirm_candles', 1)
-            
-            if confirm_len > 1 and len(df_ind) > 0:
-                raw_regimes = df_ind['regime']
-                confirmed_regimes = pd.Series('SIDEWAYS', index=df_ind.index)
-                
-                # 시작 지점의 raw regime으로 초기화 (최초 상태)
-                current_regime = raw_regimes.iloc[0]
-                candidate_regime = current_regime
-                consecutive_count = 0
-                
-                for i in range(len(df_ind)):
-                    raw_reg = raw_regimes.iloc[i]
-                    if raw_reg == current_regime:
-                        candidate_regime = current_regime
-                        consecutive_count = 0
-                    else:
-                        if raw_reg == candidate_regime:
-                            consecutive_count += 1
-                        else:
-                            candidate_regime = raw_reg
-                            consecutive_count = 1
-                        
-                        if consecutive_count >= confirm_len:
-                            current_regime = candidate_regime
-                            consecutive_count = 0
-                            
-                    confirmed_regimes.iloc[i] = current_regime
-                
-                detected_regime = confirmed_regimes.iloc[-2]
-            else:
-                detected_regime = last_closed_candle['regime']
+            confirmed = confirm_regimes(df_ind['regime'], confirm_len)
+            detected_regime = confirmed.iloc[-2]
 
             # 3. 국면 변경 시 전략 스위칭
             if self.current_regime is None or detected_regime != self.current_regime:
@@ -232,6 +202,8 @@ class RegimeLiveTrader(LiveTrader):
 
                 # SL/TP 동적 체크
                 if pos_dir != 0:
+                    # 재시작 등으로 보호 주문이 비어 있으면 지금 채운다
+                    self.ensure_protective_orders(pos_size, entry_price)
                     current_price = df_ind.iloc[-1]['close']
                     stop_loss_pct = self.strategy.stop_loss_pct
                     take_profit_pct = self.strategy.take_profit_pct
@@ -353,9 +325,12 @@ def main():
     api_key = ""
     secret_key = ""
     if not args.dry_run:
-        # 1. 스크립트 실행 경로 기준 .env 로드 (직접 파일 파싱으로 100% 보장)
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        env_path = os.path.join(script_dir, '.env')
+        # 1. 저장소 루트 기준 .env 로드 (직접 파일 파싱으로 100% 보장)
+        #    이 파일은 live/ 아래에 있고 .env는 저장소 루트에 있다. __file__ 기준으로
+        #    잡으면 live/.env를 찾게 되어 키가 비게 되므로 반드시 부모를 한 번 올라간다.
+        #    (2026-09-18: 폴더 재구성 후 실제로 이 경로가 어긋나 인증이 전부 실패했다.)
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        env_path = os.path.join(repo_root, '.env')
         if os.path.exists(env_path):
             try:
                 with open(env_path, 'r', encoding='utf-8') as env_f:

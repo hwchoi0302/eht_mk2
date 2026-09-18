@@ -1,75 +1,220 @@
 # 🤖 시장국면 동적 전략 전환 자동매매 봇 (eht_mk2)
 
-CCXT 라이브러리를 활용하여 바이낸스(Binance) 선물시장에서 실시간으로 시장 국면(상승장, 하락장, 횡보장)을 동적으로 판별하고, 각 국면에 최적화된 하위 전략으로 스위칭하며 자동매매를 수행하는 선물 매매 엔진입니다.
+바이낸스 USDⓈ-M 선물에서 시장 국면(상승/하락/횡보)을 판별하고, 국면별 하위 전략으로
+전환하며 매매하는 봇과, 그 전략을 찾기 위한 백테스트·워크포워드 연구 코드.
+
+> **현재 상태: 페이퍼 트레이딩(테스트넷) 전용.**
+> 실계좌에 붙이기 전에 `docs/REWORK_PLAN.md`의 검증 단계를 먼저 통과시킬 것.
 
 ---
 
-## 🛠️ 최근 변경 및 개선 사항
+## 📊 현재 권고 설정
 
-1. **국면 전환 컨펌 버퍼 (regime_confirm_candles = 2)**
-   * 시장 국면의 전환 기준(예: EMA 50 돌파 등)이 순간적으로 발생했다가 복귀하는 **휩소(Whipsaw)에 의한 잦은 스위칭 청산 및 수수료 낭비(Fee bleed)를 원천 차단**하기 위해 도입되었습니다.
-   * 3개년 전체 역사적 데이터 시뮬레이션 결과, 2개 마감 봉(8시간) 동안 국면이 유지될 때 교체하는 **2봉 버퍼가 하락장 리스크 회피 속도와 수수료 방어 측면에서 가장 이상적인 밸런스(Sweet Spot)**로 정량 확인되어 반영되었습니다.
+**BTC/USDT 1d · 시장국면 동적결합** — `config/regime_config_BTC-USDT_futures_1d.json`
 
-2. **횡보장 최적 평균회귀 전략 (Z-Score Mean Reversion)**
-   * 기존 횡보장(SIDEWAYS)에서 부적합하게 구동되던 추세추종형(Heikin-Ashi) 전략을 전격 폐기하고, 가격 편차를 이용해 박스권 상/하단에서 역추세 진입하는 **Z-Score 평균회귀 전략**을 도입했습니다.
-   * 횡보 구간의 승률을 **40.7%에서 52.4%로 대폭 향상**시켰습니다.
+워크포워드 재탐색(인샘플 6개월 → 아웃샘플 2개월 롤링, 16개 구간)에서
+합격선을 통과한 설정이다. 아래 수치는 **전부 아웃샘플**이다.
 
-3. **지정가(Limit) 진입 및 5단계 시장가(Market) 강제 체결 보장**
-   * 포지션 진입 시 슬리피지를 없애고 거래 수수료를 아끼기 위해 지정가로 우선 주문을 생성합니다.
-   * 30초 단위로 미체결 물량을 확인하며 최적 호가로 갱신 주문(Price Chase)을 수행하다가, 최종 5회차(약 2분 경과)까지 미체결된 잔여량은 최종 시장가로 체결하여 포지션 진입 지연 문제를 해결했습니다. (안전을 위해 포지션 청산/손절/익절/시그널 반전 시에는 즉시 시장가 청산을 유지합니다.)
+아웃샘플 전 구간: 2023-11-24 ~ 2026-07-24 (973일, 16개 구간)
 
-4. **동일 캔들 즉시 재진입 방지 (SL/TP Cooldown)**
-   * 손절/익절(SL/TP)로 인해 포지션 강제 청산이 발생했을 때, 해당 캔들이 마감되기 전까지는 동일한 시그널이 유지되더라도 재진입을 막는 쿨다운 제어 로직을 적용하여 수수료 누수를 예방합니다.
+| | 전략 | Buy & Hold |
+|---|---|---|
+| 누적 수익률 | +76.4% | +72.6% |
+| **최대 낙폭** | **-17.1%** | **-53.0%** |
+| 샤프 | +0.73 | — |
+| 구간 일관성 | 16개 중 10개 수익 (62%) | — |
+| 연 회전율 | 78회 | 0회 |
+| 비용 2배에서 | **+45.1%** | +72.6% |
 
-5. **파싱 에러 해결 및 데이터베이스 로깅 안정화**
-   * 주문 및 청산 시 CCXT 응답 데이터의 결측에 대응하는 예외 처리를 완료하여 예외로 인한 거래 중단 문제를 극복하고 SQLite DB(`trade_logs`)의 거래 기록 신뢰도를 확보했습니다.
+**수익률로는 Buy & Hold와 사실상 동률이다.** 차이는 낙폭에 있다 —
+같은 수익을 **3분의 1 수준의 낙폭**으로 냈다. 이 전략을 쓸 이유는
+"더 번다"가 아니라 "덜 깨진다"이다. 그래도 못 견디는 낙폭(-17%)이라면
+이 봇을 돌릴 이유가 없다.
 
----
+기존 4h 설정에서 바뀐 것은 두 가지뿐이다: **타임프레임 4h → 1d**,
+**손절 4% → 8% / 익절 4% → 10%**. 국면별 하위 전략 구성은 그대로다.
 
-## 📁 디렉토리 구조 및 파일 설명
+같은 전략이 4h에서는 비용 2배에서 -28.6%로 뒤집힌다. 차이는 전략이 아니라
+**거래 빈도**에서 온다 — 4h는 연 회전율이 100~360회라 왕복 8bp 비용이
+연 8~29%의 드래그가 된다.
 
-### 1. 코어 매매 엔진 및 스크립트
-*   [`run_regime_bot.py`](run_regime_bot.py): 실거래 자동매매 봇 실행의 메인 엔트리포인트. 30초 주기로 캔들을 가져와 기술 지표 계산, 국면 판정(2-캔들 버퍼 반영), 미체결 지정가 체결 모니터링을 실시간 조율합니다.
-*   [`live_trader.py`](live_trader.py): 바이낸스 선물 API 통신, 레버리지 세팅, 지정가 주문 추적/취소/갱신, 손절/익절(SL/TP) 감지, 체결 거래 로깅 등 거래 집행의 세부 기능을 구현하는 추상화 계층입니다.
-*   [`strategies.py`](strategies.py): 자동매매 전략 클래스들의 라이브러리.
-    *   `RegimeSwitchingStrategy`: 국면 감지 버퍼 및 하위 전략들을 제어하는 전략 결합기.
-    *   `DualMomentumStrategy`: 상승장(BULL)용 절대 모멘텀 + 추세 필터 전략.
-    *   `TripleEMAStrategy`: 하락장(BEAR)용 단/중/장기 EMA 크로스오버 전략.
-    *   `ZScoreMeanReversionStrategy`: 횡보장(SIDEWAYS)용 Z-Score 기반 평균회귀 전략.
-*   [`backtester.py`](backtester.py): 오프라인 과거 캔들 데이터에 기술적 지표 및 전략 신호를 대입하여 수익률, 최대 낙폭(MDD), 샤프 지수, 지불 수수료 등을 가상 시뮬레이션하는 테스트 엔진입니다.
-*   [`indicators.py`](indicators.py): EMA, ADX, RSI, 볼린저 밴드 등의 기술 지표 계산 기능 및 시장 상태 분류 로직(`classify_market_regime`)을 담당합니다.
-*   [`data_manager.py`](data_manager.py): 바이낸스 API를 통한 과거 OHLCV 데이터 수집과 로컬 SQLite 캐시 저장을 대행합니다.
-*   [`optimizer.py`](optimizer.py): Optuna를 기반으로 각 단일 전략의 하이퍼파라미터 탐색 및 최적화를 조력하는 인터페이스 클래스입니다.
-*   [`bulk_optimizer.py`](bulk_optimizer.py) & [`run_full_sweep.py`](run_full_sweep.py): 다중 종목, 기간, 타임프레임, 전략들을 일괄로 탐색하고 리더보드를 생성하는 대규모 매개변수 스위핑 엔진입니다.
-*   [`report_generator.py`](report_generator.py): 백테스팅 결과를 리포트(Markdown 등)로 변환해 저장하는 파일 생성 모듈입니다.
+값어치는 **하락장 방어**에 있다. 2025~2026년 BTC가 -34.4% 빠지는 동안
++17.3%를 냈다. 반대로 강한 상승장에서는 Buy & Hold에 크게 뒤진다
+(2023~2024년 +66.4% vs +125.4%).
 
-### 2. 유틸리티 도구 모음 (`tools/`)
-*   [`tools/verify.py`](tools/verify.py): 필수 패키지 및 커밀 모듈의 임포트 동작 상태를 자가 진단하는 검증 스크립트.
-*   [`tools/check_testnet_status.py`](tools/check_testnet_status.py): 현재 선물 거래 계정 지갑 잔고, 미실현 손익, 체결 완료된 포지션 내역 및 로컬 DB 로그 현황을 요약 출력하는 진단 툴.
-*   [`tools/calculate_total_pnl.py`](tools/calculate_total_pnl.py): CCXT 계정 인컴 데이터를 직접 파싱하여 누적 실현 수익, 지불한 수수료, 펀딩비 집계 및 실질 ROI를 분석하는 성과 툴.
-*   [`tools/check_income.py`](tools/check_income.py): 수수료 및 펀딩비 상세 영수증 로그를 날짜별로 요약 표시해 주는 조회 도구.
+⚠️ **주의**
+- 하위 전략의 기간 파라미터(듀얼 모멘텀 46/94 등)는 4h 시절 값을 물려받았다.
+  워크포워드에서 탐색한 것은 손절/익절/레버리지/배분뿐이다.
+- ETH에는 전이되지 않는다 (비용 2배에서 -10.1%, MDD -48%). **BTC 전용.**
+- 실계좌 전에 무중단 페이퍼 트레이딩으로 추적오차를 먼저 측정할 것.
+- 3년 4개월 / 16개 구간은 통계적으로 넉넉하지 않다. 수익률이 B&H와 동률인
+  상황에서 샤프 0.73의 표준오차를 감안하면, "낙폭이 낮다"는 것 외에는
+  강하게 주장할 수 있는 게 많지 않다.
 
-### 3. 리포트 및 설정 폴더 (`reports/`)
-*   [`reports/regime_config_BTC-USDT_futures_4h.json`](reports/regime_config_BTC-USDT_futures_4h.json): 봇의 실제 거래 행동 지침서. 상승장 레버리지 2배 설정 및 횡보장 Z-Score 평균회귀 파라미터가 명시되어 있으며, **2-캔들 국면 버퍼(`"regime_confirm_candles": 2`)**가 최종 세팅되어 있습니다.
+전체 결과는 `reports/wfa_BTC-USDT_1d.md`, 진단 기록은 `docs/REWORK_PLAN.md` 부록 A.
 
 ---
 
-## 🚀 구동 및 실행 안내
+## 📁 디렉토리 구조
 
-1. **의존성 설치 및 가상환경 구동**
-   ```bash
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
+```
+eht_mk2/
+├── main.py                 라이브 봇 엔트리포인트
+│
+├── core/                   라이브와 리서치가 함께 쓰는 공용 모듈
+│   ├── paths.py              모든 경로를 한 곳에서 정의 (하드코딩 금지)
+│   ├── indicators.py         지표 계산 + 국면 판정/확정
+│   ├── strategies.py         전략 클래스 16종 + 레지스트리
+│   └── data_manager.py       OHLCV 수집 / SQLite 캐시
+│
+├── live/                   실거래 경로
+│   ├── regime_bot.py         국면 감지 → 전략 스위칭 → 주문 조율
+│   └── trader.py             거래소 통신, 시장가 주문, SL/TP 보호 주문
+│
+├── research/               백테스트·최적화 (라이브가 임포트하지 않음)
+│   ├── binance_env.py        바이낸스 체결 환경 모델 (수수료/펀딩/청산/슬리피지)
+│   ├── backtester.py         백테스트 엔진
+│   ├── strategy_lab.py       워크포워드·파라미터 고원 탐색
+│   ├── run_wfa.py            전 전략 워크포워드 스윕 실행기
+│   ├── report_wfa.py         워크포워드 결과 → Markdown
+│   ├── make_config.py        워크포워드 결과 → 라이브 설정 파일
+│   ├── compare_timeframes.py 타임프레임별 결과 비교
+│   ├── optimizer.py          Optuna 단일 전략 최적화
+│   ├── bulk_optimizer.py     다중 조합 일괄 탐색
+│   ├── run_full_sweep.py     대규모 스윕 + 리더보드
+│   ├── report_generator.py   결과 → Markdown 리포트
+│   └── download_historical.py 과거 데이터 사전 다운로드
+│
+├── tools/                  진단·운영 스크립트
+│   ├── verify.py             설치·배선 자가 진단
+│   ├── selftest_engine.py    백테스트 엔진 계산 검산
+│   ├── check_heartbeat.py    봇 정체 감지 (cron용)
+│   ├── reconcile_trades.py   거래소 체결 ↔ 로컬 DB 대조
+│   ├── calculate_total_pnl.py 전 구간 손익 재집계
+│   ├── reset_testnet.py      모의 계좌 초기화
+│   ├── check_testnet_status.py 계좌 현황 요약
+│   ├── backtest_live_config.py 라이브 설정 그대로 백테스트
+│   └── backtest_sensitivity.py 비용 민감도 분석
+│
+├── config/                 regime_config_*.json (봇의 행동 지침서)
+├── data/                   trading_data.db, 런타임 상태, 펀딩 캐시  [git 제외]
+├── logs/                   회전 로그  [git 제외]
+├── reports/                백테스트 산출물
+├── scripts/run_with_loop.sh 봇 자동 재기동 래퍼
+└── docs/REWORK_PLAN.md     재설계 계획 및 진단 기록
+```
 
-2. **환경변수 설정**
-   루트 경로 내 `.env` 파일을 생성하고 아래와 같이 바이낸스 API 자격 증명을 작성합니다:
-   ```env
-   BINANCE_TESTNET_API_KEY=your_binance_testnet_api_key
-   BINANCE_TESTNET_SECRET_KEY=your_binance_testnet_secret_key
-   ```
+경로는 **절대 하드코딩하지 않는다.** 필요한 경로는 `core/paths.py`에서 가져온다.
+예전에는 각 스크립트가 `"trading_data.db"` 같은 상대 경로를 직접 써서, 실행 위치가
+바뀌면 다른 파일을 열거나 빈 DB를 새로 만들었다.
 
-3. **거래소 테스트넷(Testnet Sandbox) 실행**
-   ```bash
-   python run_regime_bot.py reports/regime_config_BTC-USDT_futures_4h.json --testnet
-   ```
+---
+
+## 🚀 실행
+
+```bash
+# 1. 의존성
+python3 -m venv venv && ./venv/bin/pip install -r requirements.txt
+
+# 2. API 키 (.env — 커밋 금지)
+cat > .env << 'EOF'
+BINANCE_TESTNET_API_KEY=...
+BINANCE_TESTNET_SECRET_KEY=...
+EOF
+
+# 3. 드라이런으로 동작 확인 (거래소 주문 없음)
+venv/bin/python main.py config/regime_config_BTC-USDT_futures_1d.json --dry-run
+
+# 4. 테스트넷 구동 (인자를 생략하면 권고 설정인 1d를 쓴다)
+./scripts/run_with_loop.sh
+```
+
+### 운영 점검
+
+```bash
+venv/bin/python tools/check_heartbeat.py     # 봇이 살아 있는가
+venv/bin/python tools/check_testnet_status.py # 계좌 현황
+venv/bin/python tools/reconcile_trades.py     # 체결 기록에 구멍이 없는가
+venv/bin/python tools/calculate_total_pnl.py  # 전 구간 손익
+venv/bin/python tools/verify.py               # 설치·배선 점검
+venv/bin/python tools/selftest_engine.py      # 백테스트 엔진 검산
+```
+
+`check_heartbeat.py`를 cron에 걸어두면 봇이 멈춰도 바로 알 수 있다.
+예전에 봇이 **47일간 죽어 있었는데 아무도 몰랐던** 적이 있다.
+
+```cron
+*/5 * * * * cd ~/workspace/eht_mk2 && venv/bin/python tools/check_heartbeat.py || <알림>
+```
+
+---
+
+## 🔬 백테스트 / 전략 재탐색
+
+```bash
+# 과거 데이터 받기
+venv/bin/python research/download_historical.py --days 1200
+
+# 라이브 설정 그대로 검증
+venv/bin/python tools/backtest_live_config.py
+
+# 전 전략 워크포워드 스윕 (비용 1배 / 2배)
+venv/bin/python research/run_wfa.py --symbol BTC/USDT --timeframe 1d --workers 4
+venv/bin/python research/report_wfa.py --symbol BTC/USDT --timeframe 1d
+venv/bin/python research/compare_timeframes.py
+```
+
+### 백테스트가 가정하는 것
+
+`research/binance_env.py`에 모아 뒀다. 실제 거래소와 맞춰 둔 지점들:
+
+| 항목 | 값 / 방식 |
+|---|---|
+| 수수료 | taker 0.04% (진입·청산 모두 시장가) |
+| 펀딩비 | 8시간마다 **실제 이력 요율** 정산 (4년치 캐시) |
+| 슬리피지 | 고정값이 아니라 ATR 비례 (`1bp + 0.02 × ATR%`) |
+| 청산가 | 실제 유지증거금 브래킷 (BTCUSDT MMR 표) |
+| 정밀도 | 틱 0.1 / 스텝 0.001 / **최소명목가 50 USDT** |
+| SL/TP | 진입 봉부터 검사. 동시 도달 시 SL 우선(보수적) |
+| 국면 판정 | 라이브와 **같은 함수** (`core.indicators.confirm_regimes`) |
+
+마지막 항목이 중요하다. 예전에는 국면 확정 로직이 라이브·백테스터·전략 클래스에
+**각각 따로** 있었고 기본값(3봉 vs 2봉)과 초기 상태가 달라서, 같은 데이터에서도
+서로 다른 국면이 나왔다.
+
+### 전략 선택 원칙 (`research/strategy_lab.py`)
+
+- **워크포워드**: 인샘플 6개월에서 파라미터를 고르고, 뒤따르는 아웃샘플 2개월
+  성과만 집계한다. 전 구간 최적화 후 전 구간 성과를 보는 건 과최적화를 성과로
+  착각하는 것이다.
+- **파라미터 고원**: 상위 30% 구간의 중앙값을 취한다. 단일 최고점은 거의 항상
+  이웃이 나쁜 뾰족한 봉우리고, 다음 구간에서 무너진다.
+- **비용 스트레스**: 비용 2배에서도 살아남는 설정만 후보로 둔다.
+- **회전율 패널티**: 연 50회전을 넘는 만큼 점수에서 깎는다.
+- 평가 지표는 총수익률이 아니라 **아웃샘플 샤프 · MDD · PF · 구간 일관성**.
+
+---
+
+## ⚠️ 주문 방식: 전량 시장가
+
+진입·청산 모두 시장가(taker)다.
+
+예전에는 지정가로 진입한 뒤 최대 4회 가격을 추격하고, 그래도 미체결이면 시장가로
+폴백했다. 체결까지 최대 2분이 걸렸고, 폴백 분기에서 `log_trade("OPEN", ...)`이
+빠져 DB에 기록 구멍이 생겼다. 경로를 하나로 줄여 두 문제를 함께 없앴다.
+
+SL/TP는 진입 직후 거래소에 `STOP_MARKET` / `TAKE_PROFIT_MARKET`로 올린다.
+봇이 30초 루프를 돌며 직접 감시하던 방식은 봇이 죽으면 아예 작동하지 않았다.
+
+---
+
+## 📌 알려진 한계
+
+- 실계좌 검증 전이다. 무중단 페이퍼 트레이딩으로 백테스트 대비 추적오차를
+  먼저 측정해야 한다.
+- 봉 안에서 SL·TP가 동시에 닿았을 때의 실제 순서는 4h 봉으로는 알 수 없다.
+  보수적으로 SL을 먼저 본다.
+- 현재 국면 판정은 EMA50/EMA200/ADX 고정 규칙이다. 이 규칙 자체는 아직
+  최적화 대상에 넣지 않았다.
+- 3년 4개월 / 16개 구간은 통계적으로 넉넉하지 않다. 샤프 0.73의 표준오차가
+  작지 않으니 단일 수치를 과신하지 말 것.

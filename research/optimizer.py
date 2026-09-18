@@ -1,9 +1,14 @@
 import numpy as np
 import pandas as pd
 import optuna
-from data_manager import DataManager
-from backtester import Backtester
-from strategies import get_strategy_by_name
+# --- 리포지토리 루트를 임포트 경로에 추가 (research/ 하위에서 실행되므로 필요) ---
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+# ---------------------------------------------------------------------------
+from core.paths import DB_PATH
+from core.data_manager import DataManager
+from research.backtester import Backtester
+from core.strategies import get_strategy_by_name
 
 # Optuna 로그 최소화
 optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -115,7 +120,7 @@ def _build_params(trial: optuna.Trial, strategy_name: str, is_futures: bool) -> 
 
 
 class StrategyOptimizer:
-    def __init__(self, db_path="trading_data.db"):
+    def __init__(self, db_path=str(DB_PATH)):
         self.data_manager = DataManager(db_path=db_path)
         self.backtester = Backtester()
 

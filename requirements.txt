@@ -1,7 +1,8 @@
+# 라이브 봇 구동에 필요한 것
 ccxt>=4.0.0
-streamlit>=1.30.0
 pandas>=2.0.0
 numpy>=1.24.0
-plotly>=5.18.0
-optuna>=3.5.0
 python-dotenv>=1.0.0
+
+# 리서치(백테스트/최적화) 전용. 봇만 돌릴 거면 없어도 된다.
+optuna>=3.5.0

@@ -25,8 +25,9 @@ def download_all(days: int = 1095):
     start_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
 
     symbols = ["BTC/USDT", "ETH/USDT"]
-    timeframes = ["1h", "4h", "1d"]
-    market_types = [False, True]  # 현물, 선물
+    # 바이낸스가 네이티브로 제공하는 간격만 쓴다 (리샘플링하지 않는다)
+    timeframes = ["1h", "2h", "4h", "6h", "8h", "12h", "1d", "3d"]
+    market_types = [True]  # 선물만 (라이브가 선물이다)
 
     total = len(symbols) * len(timeframes) * len(market_types)
     count = 0

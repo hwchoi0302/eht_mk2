@@ -732,6 +732,59 @@ class TrendFilterStrategy(BaseStrategy):
         return signals
 
 
+class RegimeRestrictedStrategy(BaseStrategy):
+    """특정 국면에서만 거래하도록 제한한 래퍼 전략.
+
+    국면별 최적 전략을 찾을 때 쓴다. 전략 15종을 세 국면에 독립적으로 배치하면
+    15³ = 3,375가지 조합이 되지만, RegimeSwitchingStrategy에서 각 하위 전략은
+    자기 국면에서만 거래하므로 국면끼리 거의 분리해서 평가할 수 있다.
+    그러면 15 × 3 = 45가지만 보면 된다.
+
+    신호 규칙은 RegimeSwitchingStrategy가 해당 국면에 대해 내는 것과 동일하다.
+      - 확정 국면이 target_regime이 아니면 0 (포지션 없음)
+      - 국면이 바뀌는 봉에서도 0 (강제 청산) — 전환 직후 바로 진입하지 않는다
+
+    완전히 분리되지는 않는다(국면 전환이 포지션을 강제 청산시키는 상호작용이
+    남는다). 그래서 국면별로 고른 뒤에는 반드시 조합해서 전 구간 재검증한다.
+    """
+
+    def __init__(self, base_strategy=None, target_regime='BULL',
+                 regime_confirm_candles=2, **kwargs):
+        params = {
+            'target_regime': target_regime,
+            'regime_confirm_candles': regime_confirm_candles,
+        }
+        params.update(kwargs)
+        super().__init__(name=f"{target_regime} 제한", **params)
+
+        if base_strategy is None:
+            raise ValueError("base_strategy가 필요합니다")
+        self.base = base_strategy
+        self.target_regime = target_regime
+
+        # 리스크 파라미터는 하위 전략의 것을 따른다
+        self.leverage = self.base.leverage
+        self.stop_loss_pct = self.base.stop_loss_pct
+        self.take_profit_pct = self.base.take_profit_pct
+        self.max_allocation_pct = self.base.max_allocation_pct
+
+    def generate_signals(self, df):
+        from core.indicators import classify_market_regime, confirm_regimes
+
+        confirmed = confirm_regimes(
+            classify_market_regime(df), self.parameters['regime_confirm_candles'])
+        regime_arr = confirmed.to_numpy()
+
+        changed = np.empty(len(regime_arr), dtype=bool)
+        changed[0] = False
+        changed[1:] = regime_arr[1:] != regime_arr[:-1]
+
+        base_sig = self.base.generate_signals(df).to_numpy()
+        active = (regime_arr == self.target_regime) & (~changed)
+
+        return pd.Series(np.where(active, base_sig, 0), index=df.index)
+
+
 def _flatten_regime_config(regime_strategies):
     """config의 regime_strategies 블록을 RegimeSwitchingStrategy 키워드로 변환.
 

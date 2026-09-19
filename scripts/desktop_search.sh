@@ -33,9 +33,15 @@ $PY -u research/regime_search.py stage1 \
     --workers "${WORKERS:-12}"
 log "1단계 완료 (exit=$?)"
 
-log "=== 4) 2단계: 조합 재검증 ==="
+log "=== 4) 2단계: 조합 재검증 (참고용, 누수 있음) ==="
 $PY -u research/regime_search.py stage2 --workers "${WORKERS:-12}"
 log "2단계 완료 (exit=$?)"
+
+log "=== 5) 3단계: 중첩 워크포워드 (최종 근거) ==="
+# 2단계는 전략 선택을 아웃샘플 성적으로 하고 파라미터도 전 폴드 합의로 뽑아서
+# 미래 참조가 섞여 있다. 3단계는 폴드마다 인샘플만 보고 다시 고른다.
+$PY -u research/regime_search.py stage3 --workers "${WORKERS:-12}"
+log "3단계 완료 (exit=$?)"
 
 log "=== 전체 파이프라인 종료 ==="
 touch reports/SEARCH_DONE

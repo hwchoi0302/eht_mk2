@@ -101,8 +101,11 @@ def walk_forward_restricted(df, strategy_name, regime, symbol='BTC/USDT',
     oos_trades = 0
     worst_dd = 0.0
     chosen_all = []
+    # 폴드별 (인샘플 점수, 고른 파라미터). 3단계 중첩 워크포워드에서
+    # "이 폴드의 인샘플만 보고 국면별 전략을 고르는" 데 쓴다.
+    fold_picks = []
 
-    for (is_start, is_end, oos_end) in folds:
+    for fold_idx, (is_start, is_end, oos_end) in enumerate(folds):
         scored = []
         for params in combos:
             try:
@@ -118,6 +121,9 @@ def walk_forward_restricted(df, strategy_name, regime, symbol='BTC/USDT',
             continue
 
         chosen = plateau_pick(scored)
+        best_is_score = max(s for _p, s in scored)
+        fold_picks.append({'fold': fold_idx, 'is_score': float(best_is_score),
+                           'params': chosen})
         try:
             m_oos = _eval_window(df, is_end, oos_end,
                                  lambda: _build_restricted(strategy_name, chosen, regime, confirm),
@@ -151,6 +157,7 @@ def walk_forward_restricted(df, strategy_name, regime, symbol='BTC/USDT',
         'oos_consistency': positive / len(oos_returns),
         'cost_multiplier': cost_multiplier,
         'chosen_params': chosen_all,
+        'fold_picks': fold_picks,
     }
 
 
@@ -353,9 +360,153 @@ def run_stage2(symbol, workers, costs, confirm):
     return out_results
 
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3단계 — 중첩 워크포워드 (정직한 아웃샘플)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# 2단계에는 두 가지 누수가 있다.
+#
+#   (1) 파라미터 누수 — 국면별 파라미터를 **전 폴드의 인샘플**에서 합의로 뽑은 뒤
+#       모든 폴드의 아웃샘플에 적용했다. 16번 폴드의 정보가 3번 폴드의 평가에
+#       들어가는 미래 참조다.
+#   (2) 선택 편향 — "어느 전략을 쓸지"를 1단계의 **아웃샘플 성적**을 보고 골랐다.
+#       국면마다 15개 중 최고를 아웃샘플 기준으로 뽑아 놓고 그 아웃샘플 성적을
+#       그대로 보고하면, 뽑기 운이 성과로 둔갑한다.
+#
+# 3단계는 폴드마다 처음부터 다시 고른다.
+#   각 폴드에서 → 그 폴드의 **인샘플만** 보고 국면별 전략·파라미터 선택
+#               → 조합해서 그 폴드의 아웃샘플에서 평가
+# 이렇게 하면 선택에 쓰인 정보와 평가에 쓰인 정보가 겹치지 않는다.
+
+
+def _stage3_job(args):
+    """타임프레임 하나에 대한 중첩 워크포워드."""
+    tf, symbol, confirm, cost, picks_by_key = args
+    try:
+        df = load_candles(symbol, tf, is_futures=True)
+        folds = make_folds(df)
+        if not folds:
+            return None
+
+        rets, sharpes, turns = [], [], []
+        trades_n = 0
+        worst = 0.0
+        per_fold = []
+
+        for fold_idx, (_is_start, is_end, oos_end) in enumerate(folds):
+            # 이 폴드의 인샘플 점수만 보고 국면별 승자를 고른다
+            chosen = {}
+            ok = True
+            for reg in REGIMES:
+                best = None
+                for name in SEARCHABLE:
+                    picks = picks_by_key.get((tf, reg, name))
+                    if not picks:
+                        continue
+                    fp = next((x for x in picks if x['fold'] == fold_idx), None)
+                    if fp is None:
+                        continue
+                    if best is None or fp['is_score'] > best[1]:
+                        best = (name, fp['is_score'], fp['params'])
+                if best is None:
+                    ok = False
+                    break
+                chosen[reg] = {'strategy_name': best[0], 'strategy_params': best[2]}
+            if not ok:
+                continue
+
+            cfg_rs = chosen
+            m = _eval_window(
+                df, is_end, oos_end,
+                lambda c=cfg_rs: RegimeSwitchingStrategy(
+                    regime_strategies=c, regime_confirm_candles=confirm),
+                symbol, cost, confirm)
+            if m is None:
+                continue
+
+            rets.append(m['total_return'])
+            sharpes.append(m['sharpe_ratio'])
+            turns.append(m.get('annual_turnover', 0.0))
+            trades_n += m['total_trades']
+            worst = min(worst, m['max_drawdown'])
+            per_fold.append({
+                'fold': fold_idx,
+                'oos_return': m['total_return'],
+                'picks': {r: chosen[r]['strategy_name'] for r in REGIMES},
+            })
+
+        if not rets:
+            return None
+        pos = sum(1 for r in rets if r > 0)
+        return {
+            'timeframe': tf, 'cost_multiplier': cost,
+            'folds': len(rets),
+            'oos_total_return': float(np.prod([1 + r for r in rets]) - 1),
+            'oos_sharpe': float(np.mean(sharpes)),
+            'oos_mdd': float(worst),
+            'oos_trades': trades_n,
+            'oos_turnover': float(np.mean(turns)),
+            'oos_consistency': pos / len(rets),
+            'per_fold': per_fold,
+        }
+    except Exception as e:
+        return {'timeframe': tf, 'cost_multiplier': cost,
+                'error': f"{type(e).__name__}: {e}"}
+
+
+def run_stage3(symbol, workers, costs, confirm):
+    src = REPORTS / f"regime_search_stage1_{symbol.replace('/', '-')}.json"
+    if not src.exists():
+        raise SystemExit(f"1단계 결과가 없습니다: {src}")
+    data = json.loads(src.read_text())
+    timeframes = data['timeframes']
+
+    picks_by_key = {}
+    missing = 0
+    for r in data['results']:
+        if r.get('cost_multiplier') != 1.0:
+            continue
+        fp = r.get('fold_picks')
+        if not fp:
+            missing += 1
+            continue
+        picks_by_key[(r['timeframe'], r['regime'], r['strategy'])] = fp
+
+    if missing:
+        raise SystemExit(
+            f"fold_picks가 없는 결과 {missing}건. 1단계를 다시 돌려야 합니다 "
+            f"(폴드별 인샘플 점수를 기록하도록 바뀌었습니다).")
+
+    jobs = [(tf, symbol, confirm, c, picks_by_key) for tf in timeframes for c in costs]
+    print(f"3단계(중첩 워크포워드): {len(jobs)}작업 / 워커 {workers}개", flush=True)
+
+    out = []
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        futs = [pool.submit(_stage3_job, j) for j in jobs]
+        for fut in as_completed(futs):
+            r = fut.result()
+            if r is None:
+                continue
+            if 'error' in r:
+                print(f"  ❌ {r['timeframe']} x{r['cost_multiplier']}: {r['error']}", flush=True)
+                continue
+            out.append(r)
+            print(f"  {r['timeframe']:<4} 비용x{r['cost_multiplier']}: "
+                  f"OOS {r['oos_total_return']:+.2%} | 샤프 {r['oos_sharpe']:+.2f} | "
+                  f"MDD {r['oos_mdd']:.1%} | 일관성 {r['oos_consistency']:.0%} | "
+                  f"회전 {r['oos_turnover']:.0f}", flush=True)
+
+    path = REPORTS / f"regime_search_stage3_{symbol.replace('/', '-')}.json"
+    path.write_text(json.dumps({'symbol': symbol, 'results': out},
+                               ensure_ascii=False, indent=2, default=str))
+    print(f"\n저장: {path}")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('stage', choices=['stage1', 'stage2'])
+    ap.add_argument('stage', choices=['stage1', 'stage2', 'stage3'])
     ap.add_argument('--symbol', default='BTC/USDT')
     ap.add_argument('--timeframes', default='1h,2h,4h,6h,8h,12h,1d,3d')
     ap.add_argument('--workers', type=int, default=12)
@@ -373,8 +524,10 @@ def main():
 
     if a.stage == 'stage1':
         run_stage1(a.timeframes.split(','), a.symbol, a.workers, costs, a.confirm)
-    else:
+    elif a.stage == 'stage2':
         run_stage2(a.symbol, a.workers, costs, a.confirm)
+    else:
+        run_stage3(a.symbol, a.workers, costs, a.confirm)
 
 
 if __name__ == '__main__':

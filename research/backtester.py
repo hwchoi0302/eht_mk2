@@ -144,6 +144,24 @@ class Backtester:
             atr_arr = np.full(len(df), np.nan)
 
         tf_ms = int(stamps[1] - stamps[0]) if len(stamps) > 1 else 4 * 3600 * 1000
+        bars_per_year = (365.25 * 24 * 3600 * 1000) / max(tf_ms, 1)
+
+        # ── 선택 기능: 변동성 타겟팅 ──────────────────────────────────────────
+        # 전략이 target_vol(연환산)을 노출하면 포지션 크기를 실현변동성에
+        # 반비례시켜 위험 기여도를 일정하게 만든다. 고정 배분은 조용한 장에서
+        # 위험을 덜 지고 급변동 장에서 과하게 지는데, 그게 샤프를 깎는다.
+        target_vol = getattr(strategy, 'target_vol', None)
+        if target_vol:
+            vw = int(getattr(strategy, 'vol_window', 20))
+            rv = (pd.Series(closes).pct_change().rolling(vw).std()
+                  * np.sqrt(bars_per_year)).to_numpy()
+        else:
+            rv = None
+
+        # ── 선택 기능: ATR 기반 손절/익절 ─────────────────────────────────────
+        # 고정 퍼센트 손절은 변동성이 커지면 쉽게 털리고 작아지면 너무 멀다.
+        atr_sl_mult = getattr(strategy, 'atr_sl_mult', None)
+        atr_tp_mult = getattr(strategy, 'atr_tp_mult', None)
 
         equity_history = np.empty(len(df), dtype=float)
         trades = []
@@ -225,6 +243,9 @@ class Backtester:
                 if want != 0:
                     equity = balance
                     notional = equity * alloc * leverage
+                    if rv is not None and np.isfinite(rv[i]) and rv[i] > 1e-9:
+                        # 위험 기여도를 일정하게. 과도한 레버리지를 막기 위해 제한.
+                        notional *= float(np.clip(target_vol / rv[i], 0.2, 3.0))
                     fill = self._fill(open_p, want, slip, is_entry=True)
                     raw_qty = notional / fill
                     new_qty = round_qty(raw_qty, self.spec)
@@ -240,8 +261,15 @@ class Backtester:
                         direction = want
                         entry_price = fill
                         entry_leverage = leverage
-                        sl_price = entry_price * (1 - sl_pct * direction)
-                        tp_price = entry_price * (1 + tp_pct * direction)
+                        bar_atr = atr_arr[i] if np.isfinite(atr_arr[i]) else None
+                        if atr_sl_mult and bar_atr:
+                            sl_price = entry_price - direction * bar_atr * atr_sl_mult
+                        else:
+                            sl_price = entry_price * (1 - sl_pct * direction)
+                        if atr_tp_mult and bar_atr:
+                            tp_price = entry_price + direction * bar_atr * atr_tp_mult
+                        else:
+                            tp_price = entry_price * (1 + tp_pct * direction)
 
                         # 청산가: cross면 계좌 전체가 증거금, isolated면 배정분만
                         wb = balance if self.margin_mode == 'cross' else (qty * entry_price / leverage)

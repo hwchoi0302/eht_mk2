@@ -785,6 +785,156 @@ class RegimeRestrictedStrategy(BaseStrategy):
         return pd.Series(np.where(active, base_sig, 0), index=df.index)
 
 
+class VolTargetTrendStrategy(BaseStrategy):
+    """장단기 이동평균 추세 + 변동성 타겟팅 + ATR 손절.
+
+    기존 전략들이 샤프 0.7을 못 넘긴 이유는 신호가 나빠서만이 아니라
+    **포지션 크기가 늘 같아서**다. 조용한 장과 급변동 장에 같은 명목가를
+    실으면 위험 기여도가 들쭉날쭉해지고 그게 변동성을 키워 샤프를 깎는다.
+
+    여기서는 실현변동성에 반비례해 크기를 조절하고(target_vol), 손절도
+    고정 퍼센트가 아니라 ATR 배수로 잡는다. 업계에서 샤프를 올리는 가장
+    확실한 두 가지 손잡이다.
+    """
+    def __init__(self, **kwargs):
+        params = {
+            'fast_period': 20, 'slow_period': 100,
+            'target_vol': 0.30, 'vol_window': 20,
+            'atr_sl_mult': 3.0, 'atr_tp_mult': 0.0,   # 0이면 익절 없음(추세 추종)
+            'allow_short': True,
+            'leverage': 2, 'stop_loss_pct': 0.15,
+            'take_profit_pct': 1.0, 'max_allocation_pct': 0.5,
+        }
+        params.update(kwargs)
+        super().__init__(name="변동성타겟 추세", **params)
+        # 백테스터가 읽는 선택 속성
+        self.target_vol = self.parameters['target_vol']
+        self.vol_window = self.parameters['vol_window']
+        self.atr_sl_mult = self.parameters['atr_sl_mult'] or None
+        self.atr_tp_mult = self.parameters['atr_tp_mult'] or None
+
+    def generate_signals(self, df):
+        close = df['close']
+        f = close.ewm(span=int(self.parameters['fast_period']), adjust=False).mean()
+        s = close.ewm(span=int(self.parameters['slow_period']), adjust=False).mean()
+        sig = pd.Series(0, index=df.index)
+        sig[f > s] = 1
+        if self.parameters['allow_short']:
+            sig[f < s] = -1
+        sig.iloc[:int(self.parameters['slow_period'])] = 0
+        return sig
+
+
+class DonchianVolTargetStrategy(BaseStrategy):
+    """도니안 채널 돌파 + 변동성 타겟팅 + ATR 손절.
+
+    추세추종의 고전. 신호 자체는 단순하지만 크기 조절과 손절을 변동성에
+    맞추면 성격이 꽤 달라진다.
+    """
+    def __init__(self, **kwargs):
+        params = {
+            'entry_period': 55, 'exit_period': 20,
+            'target_vol': 0.30, 'vol_window': 20,
+            'atr_sl_mult': 3.0, 'atr_tp_mult': 0.0,
+            'allow_short': True,
+            'leverage': 2, 'stop_loss_pct': 0.15,
+            'take_profit_pct': 1.0, 'max_allocation_pct': 0.5,
+        }
+        params.update(kwargs)
+        super().__init__(name="도니안 변동성타겟", **params)
+        self.target_vol = self.parameters['target_vol']
+        self.vol_window = self.parameters['vol_window']
+        self.atr_sl_mult = self.parameters['atr_sl_mult'] or None
+        self.atr_tp_mult = self.parameters['atr_tp_mult'] or None
+
+    def generate_signals(self, df):
+        n_in = int(self.parameters['entry_period'])
+        n_out = int(self.parameters['exit_period'])
+        high, low, close = df['high'], df['low'], df['close']
+        upper = high.rolling(n_in).max().shift(1)
+        lower = low.rolling(n_in).min().shift(1)
+        exit_up = high.rolling(n_out).max().shift(1)
+        exit_dn = low.rolling(n_out).min().shift(1)
+
+        sig = np.zeros(len(df))
+        state = 0
+        c = close.to_numpy(); u = upper.to_numpy(); l = lower.to_numpy()
+        eu = exit_up.to_numpy(); el = exit_dn.to_numpy()
+        allow_short = self.parameters['allow_short']
+        for i in range(len(df)):
+            if not np.isfinite(u[i]) or not np.isfinite(l[i]):
+                sig[i] = 0; continue
+            if state == 0:
+                if c[i] > u[i]: state = 1
+                elif allow_short and c[i] < l[i]: state = -1
+            elif state == 1:
+                if c[i] < el[i]: state = 0
+            else:
+                if c[i] > eu[i]: state = 0
+            sig[i] = state
+        sig[:n_in] = 0
+        return pd.Series(sig, index=df.index)
+
+
+class FundingCarryStrategy(BaseStrategy):
+    """펀딩 캐리 — 펀딩 요율이 높으면 숏, 음수로 깊으면 롱.
+
+    BTC 퍼프는 4년 평균 8시간당 +0.0064%(연 +6.97%)로 대체로 콘탱고다.
+    즉 숏이 꾸준히 펀딩을 **받는다**. 방향성 알파가 아니라 캐리를 먹는
+    전략이라 성격이 완전히 다르고, 추세 전략과 상관이 낮을 가능성이 있다.
+
+    주의: 이 전략은 가격 방향에 베팅하므로 캐리가 가격손실을 못 이기면
+    진다. 순수 델타중립(현물 헤지)은 이 봇 구조로는 불가능하다.
+    """
+    def __init__(self, **kwargs):
+        params = {
+            'lookback': 21,          # 펀딩 평균을 볼 8시간 구간 수
+            'entry_z': 1.0,          # 평균 대비 몇 표준편차에서 진입
+            'target_vol': 0.20, 'vol_window': 20,
+            'atr_sl_mult': 3.0, 'atr_tp_mult': 0.0,
+            'leverage': 1, 'stop_loss_pct': 0.10,
+            'take_profit_pct': 1.0, 'max_allocation_pct': 0.4,
+        }
+        params.update(kwargs)
+        super().__init__(name="펀딩 캐리", **params)
+        self.target_vol = self.parameters['target_vol']
+        self.vol_window = self.parameters['vol_window']
+        self.atr_sl_mult = self.parameters['atr_sl_mult'] or None
+        self.atr_tp_mult = self.parameters['atr_tp_mult'] or None
+        self._funding = None
+
+    def attach_funding(self, funding_df):
+        """research 쪽에서 펀딩 이력 DataFrame(timestamp, rate)을 붙여 준다."""
+        self._funding = funding_df
+
+    def generate_signals(self, df):
+        if self._funding is None or self._funding.empty:
+            return pd.Series(0, index=df.index)
+        # 각 봉 시점까지의 최근 펀딩 평균을 봉에 매핑
+        f = self._funding.sort_values('timestamp')
+        ts = df['timestamp'].to_numpy()
+        ftime = f['timestamp'].to_numpy(); frate = f['rate'].to_numpy()
+        idx = np.searchsorted(ftime, ts, side='right')
+
+        lb = int(self.parameters['lookback'])
+        roll_mean = pd.Series(frate).rolling(lb).mean().to_numpy()
+        roll_std = pd.Series(frate).rolling(lb).std().to_numpy()
+
+        sig = np.zeros(len(df))
+        z_thr = float(self.parameters['entry_z'])
+        for i, j in enumerate(idx):
+            k = j - 1
+            if k < lb or not np.isfinite(roll_std[k]) or roll_std[k] <= 0:
+                continue
+            z = (frate[k] - roll_mean[k]) / roll_std[k]
+            # 펀딩이 비정상적으로 높다 = 롱이 과열 = 숏이 캐리를 받는다
+            if z > z_thr:
+                sig[i] = -1
+            elif z < -z_thr:
+                sig[i] = 1
+        return pd.Series(sig, index=df.index)
+
+
 def _flatten_regime_config(regime_strategies):
     """config의 regime_strategies 블록을 RegimeSwitchingStrategy 키워드로 변환.
 
@@ -993,6 +1143,9 @@ ALL_STRATEGY_NAMES = [
     "하이킨아시 추세추종",
     "시장국면 동적결합",
     "장기 추세 필터",
+    "변동성타겟 추세",
+    "도니안 변동성타겟",
+    "펀딩 캐리",
 ]
 
 STRATEGY_REGISTRY = {
@@ -1013,6 +1166,9 @@ STRATEGY_REGISTRY = {
     "하이킨아시 추세추종": HeikinAshiTrendStrategy,
     "시장국면 동적결합": RegimeSwitchingStrategy,
     "장기 추세 필터": TrendFilterStrategy,
+    "펀딩 캐리": FundingCarryStrategy,
+    "도니안 변동성타겟": DonchianVolTargetStrategy,
+    "변동성타겟 추세": VolTargetTrendStrategy,
     # 영어 이름 (이전 버전 호환)
     "EMA Crossover": EMACrossStrategy,
     "RSI + Bollinger Bands": RSIBBStrategy,

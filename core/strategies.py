@@ -847,55 +847,65 @@ class RegimeSwitchingStrategy(BaseStrategy):
         super().__init__(name="시장국면 동적결합", **params)
         self.regime_strategies = regime_strategies
         
-        # 하위 전략 인스턴스 생성
-        self.bull_strat = DualMomentumStrategy(
-            lookback_period=self.parameters['bull_lookback'],
-            trend_period=self.parameters['bull_trend'],
-            leverage=self.parameters.get('bull_leverage', self.parameters['leverage']),
-            stop_loss_pct=self.parameters['stop_loss_pct'],
-            take_profit_pct=self.parameters['take_profit_pct'],
-            max_allocation_pct=self.parameters['max_allocation_pct']
-        )
-        
-        self.bear_strat = TripleEMAStrategy(
-            fast_period=self.parameters['bear_fast'],
-            mid_period=self.parameters['bear_mid'],
-            slow_period=self.parameters['bear_slow'],
-            leverage=self.parameters.get('bear_leverage', self.parameters['leverage']),
-            stop_loss_pct=self.parameters['stop_loss_pct'],
-            take_profit_pct=self.parameters['take_profit_pct'],
-            max_allocation_pct=self.parameters['max_allocation_pct']
-        )
-        
+        # 하위 전략 인스턴스 생성.
+        #
+        # ⚠️ 예전에는 세 국면의 전략이 DualMomentum / TripleEMA / ZScore 로
+        # **하드코딩**돼 있었고 설정의 strategy_name은 아예 읽지 않았다.
+        # 라이브 봇(live/regime_bot.py)은 get_strategy_by_name()으로 이름을
+        # 지키므로, 설정에 다른 전략을 써 넣으면 라이브와 백테스트가 서로 다른
+        # 전략을 돌리는 상태가 됐다. 국면별 전략 탐색 결과가 백테스트에
+        # 반영되지 않는 원인이기도 했다.
+        defaults = {
+            'BULL': (DualMomentumStrategy, {
+                'lookback_period': self.parameters['bull_lookback'],
+                'trend_period': self.parameters['bull_trend'],
+            }),
+            'BEAR': (TripleEMAStrategy, {
+                'fast_period': self.parameters['bear_fast'],
+                'mid_period': self.parameters['bear_mid'],
+                'slow_period': self.parameters['bear_slow'],
+            }),
+            'SIDEWAYS': (
+                (HeikinAshiTrendStrategy, {
+                    'ha_ema_period': self.parameters.get('side_ema_period', 34),
+                    'consecutive_candles': self.parameters.get('side_consecutive', 3),
+                })
+                if self.parameters.get('side_strategy_type', 'zscore') == 'heikin'
+                else (ZScoreMeanReversionStrategy, {
+                    'period': self.parameters['side_period'],
+                    'z_threshold': self.parameters['side_z_threshold'],
+                })
+            ),
+        }
         self.side_strategy_type = self.parameters.get('side_strategy_type', 'zscore')
-        if self.side_strategy_type == 'heikin':
-            self.side_strat = HeikinAshiTrendStrategy(
-                ha_ema_period=self.parameters.get('side_ema_period', 34),
-                consecutive_candles=self.parameters.get('side_consecutive', 3),
-                leverage=self.parameters.get('side_leverage', self.parameters['leverage']),
-                stop_loss_pct=self.parameters['stop_loss_pct'],
-                take_profit_pct=self.parameters['take_profit_pct'],
-                max_allocation_pct=self.parameters['max_allocation_pct']
-            )
-        else:
-            self.side_strat = ZScoreMeanReversionStrategy(
-                period=self.parameters['side_period'],
-                z_threshold=self.parameters['side_z_threshold'],
-                leverage=self.parameters.get('side_leverage', self.parameters['leverage']),
-                stop_loss_pct=self.parameters['stop_loss_pct'],
-                take_profit_pct=self.parameters['take_profit_pct'],
-                max_allocation_pct=self.parameters['max_allocation_pct']
-            )
 
-        # 국면별 리스크(레버리지/SL/TP/배분)를 설정 파일 값으로 맞춘다.
-        # get_dynamic_risk()가 하위 전략의 parameters를 읽기 때문에 필요하다.
-        if regime_strategies:
-            for key, strat in (('BULL', self.bull_strat), ('BEAR', self.bear_strat),
-                               ('SIDEWAYS', self.side_strat)):
-                sp = (regime_strategies.get(key) or {}).get('strategy_params', {})
-                for risk_key in ('leverage', 'stop_loss_pct', 'take_profit_pct', 'max_allocation_pct'):
-                    if risk_key in sp:
-                        strat.parameters[risk_key] = sp[risk_key]
+        built = {}
+        for regime, (fallback_cls, fallback_kwargs) in defaults.items():
+            risk = {
+                'leverage': self.parameters.get(
+                    f'{regime[:4].lower()}_leverage', self.parameters['leverage']),
+                'stop_loss_pct': self.parameters['stop_loss_pct'],
+                'take_profit_pct': self.parameters['take_profit_pct'],
+                'max_allocation_pct': self.parameters['max_allocation_pct'],
+            }
+            block = (regime_strategies or {}).get(regime) or {}
+            name = block.get('strategy_name')
+            sp = block.get('strategy_params') or {}
+
+            if name:
+                # 설정이 이름을 지정했으면 그 전략을 만든다 (라이브와 동일한 경로)
+                kwargs = dict(risk)
+                kwargs.update(sp)
+                built[regime] = get_strategy_by_name(name, **kwargs)
+            else:
+                kwargs = dict(fallback_kwargs)
+                kwargs.update(risk)
+                kwargs.update({k: v for k, v in sp.items() if k in risk})
+                built[regime] = fallback_cls(**kwargs)
+
+        self.bull_strat = built['BULL']
+        self.bear_strat = built['BEAR']
+        self.side_strat = built['SIDEWAYS']
 
     def generate_signals(self, df):
         # 1. 국면 계산 (확정 버퍼 포함)

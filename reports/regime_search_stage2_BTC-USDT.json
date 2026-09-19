@@ -1,0 +1,819 @@
+{
+  "symbol": "BTC/USDT",
+  "results": [
+    {
+      "timeframe": "12h",
+      "cost_multiplier": 2.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "12h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "Z-Score 평균회귀",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 20,
+              "z_threshold": 2.5,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "MACD 히스토그램",
+            "strategy_params": {
+              "slow_period": 26,
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35,
+              "fast_period": 19
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 30,
+              "take_profit_pct": 0.1,
+              "rsi_period": 14,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.30788316075366484,
+      "oos_sharpe": -0.5541775248360481,
+      "oos_mdd": -0.19533145416463965,
+      "oos_trades": 158,
+      "oos_turnover": 81.74771083491375,
+      "oos_consistency": 0.4375
+    },
+    {
+      "timeframe": "12h",
+      "cost_multiplier": 1.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "12h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "Z-Score 평균회귀",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 20,
+              "z_threshold": 2.5,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "MACD 히스토그램",
+            "strategy_params": {
+              "slow_period": 26,
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35,
+              "fast_period": 19
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 30,
+              "take_profit_pct": 0.1,
+              "rsi_period": 14,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.15229065181308832,
+      "oos_sharpe": -0.2058981671747679,
+      "oos_mdd": -0.18603809460473988,
+      "oos_trades": 158,
+      "oos_turnover": 83.8441169651592,
+      "oos_consistency": 0.4375
+    },
+    {
+      "timeframe": "8h",
+      "cost_multiplier": 2.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "8h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 20,
+              "take_profit_pct": 0.1,
+              "rsi_period": 21,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "MACD 히스토그램",
+            "strategy_params": {
+              "slow_period": 26,
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35,
+              "fast_period": 12
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "머니플로우 지수 (MFI)",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 14,
+              "stop_loss_pct": 0.08,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.2908778984890542,
+      "oos_sharpe": -0.7098845741924226,
+      "oos_mdd": -0.17998425844077956,
+      "oos_trades": 193,
+      "oos_turnover": 102.15928608573151,
+      "oos_consistency": 0.4375
+    },
+    {
+      "timeframe": "8h",
+      "cost_multiplier": 1.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "8h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 20,
+              "take_profit_pct": 0.1,
+              "rsi_period": 21,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "MACD 히스토그램",
+            "strategy_params": {
+              "slow_period": 26,
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35,
+              "fast_period": 12
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "머니플로우 지수 (MFI)",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 14,
+              "stop_loss_pct": 0.08,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.10420900788354726,
+      "oos_sharpe": -0.29247886489820224,
+      "oos_mdd": -0.15929632270000732,
+      "oos_trades": 193,
+      "oos_turnover": 104.56153586260585,
+      "oos_consistency": 0.5
+    },
+    {
+      "timeframe": "6h",
+      "cost_multiplier": 1.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "6h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 20,
+              "take_profit_pct": 0.1,
+              "rsi_period": 21,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "Z-Score 평균회귀",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 20,
+              "z_threshold": 2.0,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "EMA 크로스오버",
+            "strategy_params": {
+              "slow_period": 50,
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35,
+              "fast_period": 12
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.5017205750755538,
+      "oos_sharpe": -0.8399510589423083,
+      "oos_mdd": -0.2946393350311115,
+      "oos_trades": 295,
+      "oos_turnover": 148.65087333259885,
+      "oos_consistency": 0.3125
+    },
+    {
+      "timeframe": "6h",
+      "cost_multiplier": 2.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "6h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 20,
+              "take_profit_pct": 0.1,
+              "rsi_period": 21,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "Z-Score 평균회귀",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 20,
+              "z_threshold": 2.0,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "EMA 크로스오버",
+            "strategy_params": {
+              "slow_period": 50,
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35,
+              "fast_period": 12
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.6477517812612065,
+      "oos_sharpe": -1.3141577433135083,
+      "oos_mdd": -0.30734868973626567,
+      "oos_trades": 296,
+      "oos_turnover": 145.337601865023,
+      "oos_consistency": 0.1875
+    },
+    {
+      "timeframe": "4h",
+      "cost_multiplier": 1.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "4h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "이치모쿠 구름",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "변동성 돌파",
+            "strategy_params": {
+              "k": 0.7,
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "Z-Score 평균회귀",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 30,
+              "z_threshold": 2.5,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": 0.7402588201224141,
+      "oos_sharpe": 0.7987622131927814,
+      "oos_mdd": -0.1904130670617312,
+      "oos_trades": 302,
+      "oos_turnover": 164.512033113795,
+      "oos_consistency": 0.625
+    },
+    {
+      "timeframe": "4h",
+      "cost_multiplier": 2.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "4h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "이치모쿠 구름",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "변동성 돌파",
+            "strategy_params": {
+              "k": 0.7,
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "Z-Score 평균회귀",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 30,
+              "z_threshold": 2.5,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": 0.299976566409345,
+      "oos_sharpe": 0.3819841693472179,
+      "oos_mdd": -0.20778478045282947,
+      "oos_trades": 301,
+      "oos_turnover": 160.7974534625658,
+      "oos_consistency": 0.5625
+    },
+    {
+      "timeframe": "3d",
+      "cost_multiplier": 1.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "3d",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "윌리엄스 %R",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 14,
+              "stop_loss_pct": 0.08,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "Z-Score 평균회귀",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.05,
+              "period": 20,
+              "z_threshold": 2.0,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "MACD 히스토그램",
+            "strategy_params": {
+              "slow_period": 26,
+              "leverage": 2,
+              "take_profit_pct": 0.2,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35,
+              "fast_period": 12
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.47651019377979786,
+      "oos_sharpe": -0.7519718807239771,
+      "oos_mdd": -0.16024280696411866,
+      "oos_trades": 65,
+      "oos_turnover": 23.334864833450762,
+      "oos_consistency": 0.1875
+    },
+    {
+      "timeframe": "3d",
+      "cost_multiplier": 2.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "3d",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "윌리엄스 %R",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 14,
+              "stop_loss_pct": 0.08,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "Z-Score 평균회귀",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.05,
+              "period": 20,
+              "z_threshold": 2.0,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "MACD 히스토그램",
+            "strategy_params": {
+              "slow_period": 26,
+              "leverage": 2,
+              "take_profit_pct": 0.2,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35,
+              "fast_period": 12
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.5636411661846916,
+      "oos_sharpe": -1.053073270000597,
+      "oos_mdd": -0.19015790486411924,
+      "oos_trades": 67,
+      "oos_turnover": 22.996240682585093,
+      "oos_consistency": 0.1875
+    },
+    {
+      "timeframe": "1d",
+      "cost_multiplier": 1.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "1d",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "스토캐스틱 RSI",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stoch_period": 14,
+              "rsi_period": 14,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "적응형 시장국면",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "Z-Score 평균회귀",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 20,
+              "z_threshold": 2.0,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": 0.9101770452539739,
+      "oos_sharpe": 0.8796711024738233,
+      "oos_mdd": -0.1796311373741729,
+      "oos_trades": 122,
+      "oos_turnover": 73.6406587605606,
+      "oos_consistency": 0.625
+    },
+    {
+      "timeframe": "1d",
+      "cost_multiplier": 2.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "1d",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "스토캐스틱 RSI",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stoch_period": 14,
+              "rsi_period": 14,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "적응형 시장국면",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "Z-Score 평균회귀",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 20,
+              "z_threshold": 2.0,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": 0.49445211214814777,
+      "oos_sharpe": 0.5372481367262427,
+      "oos_mdd": -0.19492379003304106,
+      "oos_trades": 123,
+      "oos_turnover": 70.1223076990871,
+      "oos_consistency": 0.5625
+    },
+    {
+      "timeframe": "2h",
+      "cost_multiplier": 2.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "2h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "스토캐스틱 RSI",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stoch_period": 14,
+              "rsi_period": 14,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 30,
+              "take_profit_pct": 0.1,
+              "rsi_period": 14,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "머니플로우 지수 (MFI)",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 14,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.774203440303842,
+      "oos_sharpe": -1.833084222071075,
+      "oos_mdd": -0.3176532876868082,
+      "oos_trades": 815,
+      "oos_turnover": 402.7561461652773,
+      "oos_consistency": 0.3125
+    },
+    {
+      "timeframe": "2h",
+      "cost_multiplier": 1.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "2h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "스토캐스틱 RSI",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "stoch_period": 14,
+              "rsi_period": 14,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 30,
+              "take_profit_pct": 0.1,
+              "rsi_period": 14,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "머니플로우 지수 (MFI)",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 14,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.5079233182770791,
+      "oos_sharpe": -0.7612922690739057,
+      "oos_mdd": -0.29055211127497305,
+      "oos_trades": 814,
+      "oos_turnover": 416.8667314017441,
+      "oos_consistency": 0.4375
+    },
+    {
+      "timeframe": "1h",
+      "cost_multiplier": 1.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "1h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "도니안 채널 돌파",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 40,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 20,
+              "take_profit_pct": 0.1,
+              "rsi_period": 21,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 30,
+              "take_profit_pct": 0.1,
+              "rsi_period": 21,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.8047983647515035,
+      "oos_sharpe": -1.9804181331179938,
+      "oos_mdd": -0.3406063227380878,
+      "oos_trades": 1426,
+      "oos_turnover": 700.5423764950481,
+      "oos_consistency": 0.375
+    },
+    {
+      "timeframe": "1h",
+      "cost_multiplier": 2.0,
+      "config": {
+        "symbol": "BTC/USDT",
+        "is_futures": true,
+        "timeframe": "1h",
+        "regime_confirm_candles": 2,
+        "regime_strategies": {
+          "BULL": {
+            "strategy_name": "도니안 채널 돌파",
+            "strategy_params": {
+              "leverage": 2,
+              "take_profit_pct": 0.1,
+              "period": 40,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "BEAR": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 20,
+              "take_profit_pct": 0.1,
+              "rsi_period": 21,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          },
+          "SIDEWAYS": {
+            "strategy_name": "RSI + 볼린저 밴드",
+            "strategy_params": {
+              "leverage": 2,
+              "bb_period": 30,
+              "take_profit_pct": 0.1,
+              "rsi_period": 21,
+              "stop_loss_pct": 0.05,
+              "max_allocation_pct": 0.35
+            }
+          }
+        }
+      },
+      "folds": 16,
+      "oos_total_return": -0.9456643091430312,
+      "oos_sharpe": -3.6634081041791564,
+      "oos_mdd": -0.37834967001061137,
+      "oos_trades": 1426,
+      "oos_turnover": 668.0180166938123,
+      "oos_consistency": 0.1875
+    }
+  ]
+}

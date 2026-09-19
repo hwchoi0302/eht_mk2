@@ -46,6 +46,8 @@ class LiveTrader:
         self._order_timeout_count = 0      # Circuit breaker: 연속 타임아웃 횟수
         self._last_order_timeout_ts = 0   # 마지막 타임아웃 발생 시각 (epoch)
         self._ticker_fail_count = 0   # 티커 조회 연속 실패 횟수
+        self._protected_position = None  # SL/TP를 걸어 둔 포지션 식별자
+        self._protected_at = 0.0         # 마지막으로 보호 주문을 건 시각
         self.last_exit_candle_timestamp = None
         
 
@@ -244,21 +246,28 @@ class LiveTrader:
         return None
 
     def cancel_protective_orders(self):
-        """포지션에 걸려 있는 미체결 SL/TP 주문을 모두 취소한다."""
+        """걸려 있는 SL/TP 주문을 전부 취소한다.
+
+        ⚠️ `fetch_open_orders()`는 `closePosition=True` 조건부 주문을 **돌려주지
+        않는다.** 거래소는 같은 주문을 또 걸면 -4130 ("An open stop or take profit
+        order with GTE and closePosition in the direction is existing")으로
+        거절하면서도, 목록 조회에는 0건으로 나온다. 그래서 주문을 하나씩 찾아
+        취소하는 방식은 동작하지 않았다.
+
+        심볼 단위 전량 취소를 쓴다. 이 봇은 진입을 시장가로만 하므로 미체결로
+        남아 있을 수 있는 주문은 SL/TP뿐이고, 전량 취소해도 잃을 것이 없다.
+        """
         if not self.is_futures:
             return
         try:
-            for order in self.exchange.fetch_open_orders(self.symbol):
-                if order.get('type', '').lower() in ('stop_market', 'take_profit_market', 'stop', 'take_profit'):
-                    try:
-                        self.exchange.cancel_order(order['id'], self.symbol)
-                        logging.info(f"보호 주문 {order['id']} ({order.get('type')}) 취소.")
-                    except Exception as e:
-                        logging.warning(f"보호 주문 {order.get('id')} 취소 실패: {e}")
+            self.exchange.cancel_all_orders(self.symbol)
+            logging.info("보호 주문 전량 취소 완료.")
         except Exception as e:
-            logging.warning(f"미체결 주문 조회 실패: {e}")
+            logging.warning(f"보호 주문 취소 실패: {e}")
+        finally:
+            self._protected_position = None
 
-    def place_protective_orders(self, direction, entry_price):
+    def place_protective_orders(self, direction, entry_price, position_key=None):
         """진입 직후 거래소에 SL/TP를 STOP_MARKET / TAKE_PROFIT_MARKET으로 올린다.
 
         예전에는 봇이 30초 루프를 돌며 직접 가격을 보고 청산했다. 봇이 죽어 있으면
@@ -269,9 +278,9 @@ class LiveTrader:
         if not self.is_futures:
             return
 
-        # 이전 포지션의 잔여 보호 주문을 먼저 걷어낸다. 바이낸스는 closePosition
-        # 주문을 포지션 종료 시 자동 취소하지만, 그 사이 봇이 죽거나 수동 개입이
-        # 있었으면 남아 있을 수 있다. 남은 주문은 새 포지션에 대고 발동한다.
+        # 먼저 기존 보호 주문을 걷어낸다. 남아 있으면 -4130으로 거절당하고,
+        # 조회로는 존재를 확인할 수 없으므로 '취소 후 재등록'이 유일하게
+        # 확실한 경로다.
         self.cancel_protective_orders()
 
         sl_pct = self.strategy.stop_loss_pct
@@ -281,6 +290,7 @@ class LiveTrader:
         sl_price = entry_price * (1 - sl_pct * sign)
         tp_price = entry_price * (1 + tp_pct * sign)
         close_side = 'sell' if direction == 'BUY' else 'buy'
+        placed = 0
 
         for order_type, stop_price, label in (
             ('STOP_MARKET', sl_price, 'SL'),
@@ -298,35 +308,70 @@ class LiveTrader:
                     }
                 )
                 logging.info(f"{label} 주문 등록: {order_type} @ {stop_str}")
+                placed += 1
             except Exception as e:
-                logging.error(f"{label} 보호 주문 등록 실패 ({order_type} @ {stop_price}): {e}")
+                msg = str(e)
+                if '-4130' in msg:
+                    # 이미 같은 방향의 보호 주문이 살아 있다는 뜻이다. 조회로는
+                    # 보이지 않으므로 이 응답 자체를 '보호되고 있음'의 근거로 쓴다.
+                    logging.info(f"{label} 주문이 이미 존재합니다 (거래소 -4130). 그대로 둡니다.")
+                    placed += 1
+                else:
+                    logging.error(f"{label} 보호 주문 등록 실패 ({order_type} @ {stop_price}): {e}")
+
+        if placed == 2:
+            self._protected_position = position_key
+            self._protected_at = time.time()
+        else:
+            # 둘 중 하나라도 못 걸었으면 보호된 것으로 치지 않는다.
+            # 다음 루프에서 다시 시도하게 둔다.
+            self._protected_position = None
+            logging.warning(f"보호 주문이 완전하지 않습니다 ({placed}/2). 다음 루프에서 재시도합니다.")
+
+    # 보호 주문을 다시 확인/재등록하는 주기(초). 조회로 존재를 확인할 수 없으므로
+    # 외부에서 취소되는 경우에 대비해 느리게 재확인한다. 30분이면 API 비용은
+    # 무시할 수준이고, 스탑 없이 방치되는 최대 시간도 그만큼으로 제한된다.
+    PROTECTIVE_REFRESH_SEC = 1800
 
     def ensure_protective_orders(self, pos_size, entry_price):
-        """포지션은 있는데 SL/TP 주문이 없으면 지금이라도 올린다.
+        """포지션에 SL/TP가 걸려 있도록 보장한다.
 
-        봇을 재시작했거나, 보호 주문을 붙이기 전 버전에서 진입한 포지션이
-        남아 있으면 거래소에 스탑이 하나도 없는 상태가 된다. 그러면 봇이
-        죽는 순간 그 포지션은 완전히 무방비다 — 7/29~9/14 47일 방치가
-        정확히 그 상황이었다. 매 루프에서 싸게 확인하고 없으면 채운다.
+        **거래소 조회로는 확인할 수 없다.** `fetch_open_orders()`가
+        `closePosition=True` 조건부 주문을 돌려주지 않기 때문이다(0건으로 나오지만
+        같은 주문을 걸면 -4130으로 거절당한다). 처음엔 조회 결과를 믿고 매 루프
+        재등록을 시도했는데, 30초마다 -4130 에러만 쌓였다.
+
+        그래서 조회 대신 **로컬 상태**로 추적한다.
+          - 어떤 포지션에 대해 보호 주문을 걸었는지 `_protected_position`에 기록
+          - 포지션이 바뀌었거나(재시작 포함) 기록이 없으면 취소 후 재등록
+          - 기록이 맞아도 PROTECTIVE_REFRESH_SEC마다 한 번은 다시 걸어,
+            외부에서 취소된 경우 스스로 복구한다
         """
         if not self.is_futures or pos_size == 0:
+            self._protected_position = None
             return
-        try:
-            open_orders = self.exchange.fetch_open_orders(self.symbol)
-            kinds = {o.get('type', '').lower() for o in open_orders}
-            has_sl = 'stop_market' in kinds or 'stop' in kinds
-            has_tp = 'take_profit_market' in kinds or 'take_profit' in kinds
-            if has_sl and has_tp:
-                return
 
-            logging.warning(
-                f"보호 주문 누락 감지 (SL={has_sl}, TP={has_tp}). "
-                f"포지션 {pos_size} @ {entry_price} 에 대해 재등록합니다."
+        # 포지션 식별은 **수량(부호 포함)만** 쓴다.
+        # 진입가를 키에 넣었더니 매 루프 불일치가 났다 — 주문 체결가(order.average,
+        # 예: 80854.4)와 거래소가 보고하는 포지션 평균단가(예: 80856.93)가 미세하게
+        # 다르기 때문이다. 수량은 정확히 일치한다. 청산 시 플래그를 비우므로
+        # 같은 수량으로 새 포지션을 잡아도 open_position 경로에서 다시 설정된다.
+        key = round(float(pos_size), 8)
+
+        if self._protected_position == key:
+            age = time.time() - self._protected_at
+            if age < self.PROTECTIVE_REFRESH_SEC:
+                return
+            logging.info(
+                f"보호 주문 주기 재확인 ({age/60:.0f}분 경과). 취소 후 다시 겁니다."
             )
-            direction = 'BUY' if pos_size > 0 else 'SELL'
-            self.place_protective_orders(direction, entry_price)
-        except Exception as e:
-            logging.error(f"보호 주문 확인 실패: {e}")
+        else:
+            logging.info(
+                f"보호 주문 기록 없음 (포지션 {pos_size} @ {entry_price:.2f}). 등록합니다."
+            )
+
+        direction = 'BUY' if pos_size > 0 else 'SELL'
+        self.place_protective_orders(direction, entry_price, position_key=key)
 
     def run_once(self):
         """Runs a single iteration of fetching candles, computing signals, and placing trades."""
@@ -506,7 +551,8 @@ class LiveTrader:
             logging.info(f"시장가 체결 완료: {filled_amount} @ {fill_price}")
 
             # 진입 즉시 SL/TP를 거래소에 올린다
-            self.place_protective_orders(direction, fill_price)
+            pos_key = round(filled_amount if direction == 'BUY' else -filled_amount, 8)
+            self.place_protective_orders(direction, fill_price, position_key=pos_key)
 
             self._order_timeout_count = 0
 

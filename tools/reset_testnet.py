@@ -160,8 +160,8 @@ def main():
     print("테스트넷 잔고 충전은 API로 불가능합니다:")
     print("   https://testnet.binancefuture.com  →  로그인  →  잔고 리셋/충전")
     print()
-    print("충전 후 봇을 다시 띄우세요:")
-    print("   ./scripts/run_with_loop.sh config/regime_config_BTC-USDT_futures_4h.json")
+    print("충전 후 봇을 다시 띄우세요 (인자 없이 실행하면 권고 설정인 1d를 씁니다):")
+    print("   ./scripts/run_with_loop.sh")
     print("=" * 62)
 
 

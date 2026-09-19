@@ -38,6 +38,8 @@ class LiveTrader:
     _ticker_fail_count = 0        # 티커 조회 연속 실패 횟수
     _protected_position = None    # SL/TP를 걸어 둔 포지션 식별자(수량)
     _protected_at = 0.0           # 마지막으로 보호 주문을 건 시각
+    _exchange_stops_unsupported = False   # 거래소가 조건부 주문을 만들지 않는 환경인가
+    _warned_no_exchange_stops = False     # 위 경고를 이미 냈는가
 
     def __init__(self, api_key, secret_key, symbol, timeframe, is_futures, strategy_name, strategy_params, use_testnet=True):
         self.api_key = api_key
@@ -254,6 +256,29 @@ class LiveTrader:
             )
         return None
 
+    def _has_live_conditional_orders(self):
+        """거래소에 살아 있는 조건부(STOP/TAKE_PROFIT) 주문이 실제로 있는지 확인한다.
+
+        생성 응답의 주문 ID도, -4130("이미 존재") 응답도 신뢰할 수 없다.
+        바이낸스 데모 트레이딩은 조건부 주문 요청을 받아 ID까지 돌려주면서
+        실제로는 만들지 않는다. 전체 주문 이력을 조회해 보면 STOP_MARKET /
+        TAKE_PROFIT_MARKET 이 **한 건도** 남지 않는다 (MARKET/LIMIT만 있다).
+        openOrders도 빈 배열을 돌려주므로, 유일하게 확실한 근거가 주문 이력이다.
+        """
+        try:
+            market = self.exchange.market(self.symbol)
+            rows = self.exchange.fapiPrivateGetAllOrders(
+                {'symbol': market['id'], 'limit': 50})
+        except Exception as e:
+            logging.warning(f"주문 이력 조회 실패, 보호 상태를 확인할 수 없습니다: {e}")
+            return False
+        for o in rows:
+            otype = str(o.get('type', ''))
+            if ('STOP' in otype or 'TAKE_PROFIT' in otype) and \
+                    o.get('status') in ('NEW', 'PARTIALLY_FILLED'):
+                return True
+        return False
+
     def cancel_protective_orders(self):
         """걸려 있는 SL/TP 주문을 전부 취소한다.
 
@@ -299,7 +324,7 @@ class LiveTrader:
         sl_price = entry_price * (1 - sl_pct * sign)
         tp_price = entry_price * (1 + tp_pct * sign)
         close_side = 'sell' if direction == 'BUY' else 'buy'
-        placed = 0
+        requested = 0
 
         for order_type, stop_price, label in (
             ('STOP_MARKET', sl_price, 'SL'),
@@ -307,7 +332,7 @@ class LiveTrader:
         ):
             try:
                 stop_str = self.exchange.price_to_precision(self.symbol, stop_price)
-                self.exchange.create_order(
+                order = self.exchange.create_order(
                     self.symbol, order_type, close_side, None, None,
                     params={
                         'stopPrice': float(stop_str),
@@ -316,26 +341,46 @@ class LiveTrader:
                         'recvWindow': 10000,
                     }
                 )
-                logging.info(f"{label} 주문 등록: {order_type} @ {stop_str}")
-                placed += 1
+                # ⚠️ 생성 응답만 믿지 않는다. 바이낸스 데모 트레이딩은 조건부 주문을
+                # 받아 주문 ID까지 돌려주지만 **실제로는 만들지 않는다**
+                # (openOrders/allOrders/fetch_order 어디에도 없다).
+                # 검증 없이 성공으로 처리하다가, 포지션이 스탑 없이 방치되는데도
+                # 로그에는 "SL 주문 등록"이 찍히는 상태로 오래 돌았다.
+                logging.info(f"{label} 주문 요청 전송: {order_type} @ {stop_str} "
+                             f"(id={order.get('id')})")
+                requested += 1
             except Exception as e:
                 msg = str(e)
                 if '-4130' in msg:
-                    # 이미 같은 방향의 보호 주문이 살아 있다는 뜻이다. 조회로는
-                    # 보이지 않으므로 이 응답 자체를 '보호되고 있음'의 근거로 쓴다.
-                    logging.info(f"{label} 주문이 이미 존재합니다 (거래소 -4130). 그대로 둡니다.")
-                    placed += 1
+                    # "이미 존재한다"는 응답. 실제로 존재하는지는 아래에서 이력으로 확인한다.
+                    logging.info(f"{label}: 거래소가 이미 존재한다고 응답(-4130).")
+                    requested += 1
                 else:
                     logging.error(f"{label} 보호 주문 등록 실패 ({order_type} @ {stop_price}): {e}")
 
+        # 요청이 통했다고 끝이 아니다. 이력으로 실제 존재를 확인한다.
+        placed = 2 if (requested == 2 and self._has_live_conditional_orders()) else 0
         if placed == 2:
+            logging.info("보호 주문 존재 확인됨 (주문 이력 대조).")
             self._protected_position = position_key
             self._protected_at = time.time()
         else:
-            # 둘 중 하나라도 못 걸었으면 보호된 것으로 치지 않는다.
-            # 다음 루프에서 다시 시도하게 둔다.
+            if requested == 2:
+                self._exchange_stops_unsupported = True
             self._protected_position = None
-            logging.warning(f"보호 주문이 완전하지 않습니다 ({placed}/2). 다음 루프에서 재시도합니다.")
+            if self._exchange_stops_unsupported:
+                # 거래소 스탑을 못 쓰는 환경이다. 봇 내부 폴링 SL/TP가 유일한
+                # 보호 수단이므로, 봇이 죽으면 포지션은 무방비다.
+                # (run_once의 SL/TP 검사와 tools/check_heartbeat.py가 그 역할)
+                if not self._warned_no_exchange_stops:
+                    logging.error(
+                        "🚨 이 거래소 환경은 조건부 주문(STOP_MARKET/TAKE_PROFIT_MARKET)을 "
+                        "생성하지 않습니다. SL/TP는 봇 내부 폴링으로만 관리됩니다. "
+                        "봇이 정지하면 포지션이 무방비 상태가 되므로 하트비트 감시가 필수입니다."
+                    )
+                    self._warned_no_exchange_stops = True
+            else:
+                logging.warning(f"보호 주문 요청이 완전하지 않습니다 ({requested}/2). 다음 루프에서 재시도합니다.")
 
     # 보호 주문을 다시 확인/재등록하는 주기(초). 조회로 존재를 확인할 수 없으므로
     # 외부에서 취소되는 경우에 대비해 느리게 재확인한다. 30분이면 API 비용은
@@ -358,6 +403,11 @@ class LiveTrader:
         """
         if not self.is_futures or pos_size == 0:
             self._protected_position = None
+            return
+
+        if self._exchange_stops_unsupported:
+            # 이 환경은 조건부 주문을 만들지 못한다. 매 루프 헛되이 요청하지 않는다.
+            # SL/TP는 run_once의 폴링 검사가 담당한다.
             return
 
         # 포지션 식별은 **수량(부호 포함)만** 쓴다.

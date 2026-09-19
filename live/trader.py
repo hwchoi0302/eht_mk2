@@ -30,6 +30,15 @@ DB_NAME = str(DB_PATH)
 STATUS_FILE = str(STATUS_FILE_PATH)
 
 class LiveTrader:
+    # ── 클래스 수준 기본값 ────────────────────────────────────────────────────
+    # RegimeLiveTrader는 super().__init__()을 호출하지 않고 상태를 직접 세팅한다.
+    # 그래서 여기 __init__에만 새 속성을 추가하면 하위 클래스에서 누락되고,
+    # 처음 참조하는 순간 AttributeError로 루프가 죽는다 (실제로 그렇게 죽었다).
+    # 클래스 속성으로 두면 어느 생성 경로를 타든 기본값이 보장된다.
+    _ticker_fail_count = 0        # 티커 조회 연속 실패 횟수
+    _protected_position = None    # SL/TP를 걸어 둔 포지션 식별자(수량)
+    _protected_at = 0.0           # 마지막으로 보호 주문을 건 시각
+
     def __init__(self, api_key, secret_key, symbol, timeframe, is_futures, strategy_name, strategy_params, use_testnet=True):
         self.api_key = api_key
         self.secret_key = secret_key

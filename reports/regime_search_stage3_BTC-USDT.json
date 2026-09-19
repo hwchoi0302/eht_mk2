@@ -5,16 +5,16 @@
       "timeframe": "12h",
       "cost_multiplier": 1.0,
       "folds": 16,
-      "oos_total_return": -0.31521933185963924,
-      "oos_sharpe": -0.569078680440331,
-      "oos_mdd": -0.2518880480194793,
-      "oos_trades": 187,
-      "oos_turnover": 99.03036287475527,
-      "oos_consistency": 0.3125,
+      "oos_total_return": -0.44094937932464484,
+      "oos_sharpe": -0.6572019494399703,
+      "oos_mdd": -0.2170459574519652,
+      "oos_trades": 206,
+      "oos_turnover": 128.82629677547908,
+      "oos_consistency": 0.375,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.027761395516373466,
+          "oos_return": -0.154318991989423,
           "picks": {
             "BULL": "적응형 시장국면",
             "BEAR": "윌리엄스 %R",
@@ -23,7 +23,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.10921334373738834,
+          "oos_return": 0.09319565705855881,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "윌리엄스 %R",
@@ -32,7 +32,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.04874712379302215,
+          "oos_return": -0.08391999068108957,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -41,7 +41,7 @@
         },
         {
           "fold": 3,
-          "oos_return": -0.21436301930324442,
+          "oos_return": -0.1772669690651152,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -50,7 +50,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.07576731032759287,
+          "oos_return": -0.035298846568656894,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "MACD 히스토그램",
@@ -59,7 +59,7 @@
         },
         {
           "fold": 5,
-          "oos_return": 0.2113407249479029,
+          "oos_return": -0.07281315903625019,
           "picks": {
             "BULL": "Z-Score 평균회귀",
             "BEAR": "Z-Score 평균회귀",
@@ -68,7 +68,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.09759240279005699,
+          "oos_return": 0.0005674105242678973,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "Z-Score 평균회귀",
@@ -77,7 +77,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.045321114191363865,
+          "oos_return": 0.03180307178473374,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "Z-Score 평균회귀",
@@ -86,7 +86,7 @@
         },
         {
           "fold": 8,
-          "oos_return": -0.04158211495793995,
+          "oos_return": -0.009977270188545106,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "스토캐스틱 RSI",
@@ -95,7 +95,7 @@
         },
         {
           "fold": 9,
-          "oos_return": -0.009694501774702546,
+          "oos_return": -0.0002574437629613291,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "스토캐스틱 RSI",
@@ -104,7 +104,7 @@
         },
         {
           "fold": 10,
-          "oos_return": 0.023801951183615833,
+          "oos_return": 0.019801280407431454,
           "picks": {
             "BULL": "적응형 시장국면",
             "BEAR": "스토캐스틱 RSI",
@@ -113,7 +113,7 @@
         },
         {
           "fold": 11,
-          "oos_return": 0.056102583468634615,
+          "oos_return": -0.12606687132760097,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "Z-Score 평균회귀",
@@ -122,7 +122,7 @@
         },
         {
           "fold": 12,
-          "oos_return": -0.00340702586725139,
+          "oos_return": 0.07619621486449968,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "MACD 히스토그램",
@@ -131,7 +131,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.04202495866197864,
+          "oos_return": -0.09131382376844965,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "장기 추세 필터",
@@ -140,7 +140,7 @@
         },
         {
           "fold": 14,
-          "oos_return": -0.10904249454819603,
+          "oos_return": 0.013904538726760896,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "MACD 히스토그램",
@@ -149,7 +149,7 @@
         },
         {
           "fold": 15,
-          "oos_return": 0.009166384591425603,
+          "oos_return": -0.006605975952078902,
           "picks": {
             "BULL": "윌리엄스 %R",
             "BEAR": "MACD 히스토그램",
@@ -162,16 +162,16 @@
       "timeframe": "12h",
       "cost_multiplier": 2.0,
       "folds": 16,
-      "oos_total_return": -0.4552751624964957,
-      "oos_sharpe": -0.9293420955456091,
-      "oos_mdd": -0.26703220373233405,
-      "oos_trades": 187,
-      "oos_turnover": 96.10604750924618,
-      "oos_consistency": 0.3125,
+      "oos_total_return": -0.614029935688204,
+      "oos_sharpe": -1.184011352957759,
+      "oos_mdd": -0.23611792105268292,
+      "oos_trades": 207,
+      "oos_turnover": 125.1348014051228,
+      "oos_consistency": 0.25,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.04237446454554461,
+          "oos_return": -0.16882229271008808,
           "picks": {
             "BULL": "적응형 시장국면",
             "BEAR": "윌리엄스 %R",
@@ -180,7 +180,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.08999056100897551,
+          "oos_return": 0.05926828479488333,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "윌리엄스 %R",
@@ -189,7 +189,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.06608606412583573,
+          "oos_return": -0.09920192354123814,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -198,7 +198,7 @@
         },
         {
           "fold": 3,
-          "oos_return": -0.23217615084204035,
+          "oos_return": -0.19747352797130557,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -207,7 +207,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.08670620738924817,
+          "oos_return": -0.06428761239332648,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "MACD 히스토그램",
@@ -216,7 +216,7 @@
         },
         {
           "fold": 5,
-          "oos_return": 0.19308227822711976,
+          "oos_return": -0.11719196120665176,
           "picks": {
             "BULL": "Z-Score 평균회귀",
             "BEAR": "Z-Score 평균회귀",
@@ -225,7 +225,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.11385003052648801,
+          "oos_return": -0.02786508247246,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "Z-Score 평균회귀",
@@ -234,7 +234,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.05587586659938737,
+          "oos_return": -0.027433798248723495,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "Z-Score 평균회귀",
@@ -243,7 +243,7 @@
         },
         {
           "fold": 8,
-          "oos_return": -0.05924210625557358,
+          "oos_return": -0.028018834519754843,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "스토캐스틱 RSI",
@@ -252,7 +252,7 @@
         },
         {
           "fold": 9,
-          "oos_return": -0.025001834662617517,
+          "oos_return": -0.024833316090631885,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "스토캐스틱 RSI",
@@ -261,7 +261,7 @@
         },
         {
           "fold": 10,
-          "oos_return": 0.012544658801999287,
+          "oos_return": 0.01247016694787062,
           "picks": {
             "BULL": "적응형 시장국면",
             "BEAR": "스토캐스틱 RSI",
@@ -270,7 +270,7 @@
         },
         {
           "fold": 11,
-          "oos_return": 0.034252708915754715,
+          "oos_return": -0.13871595842155737,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "Z-Score 평균회귀",
@@ -279,7 +279,7 @@
         },
         {
           "fold": 12,
-          "oos_return": -0.010794353560419356,
+          "oos_return": 0.057808608962580665,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "MACD 히스토그램",
@@ -288,7 +288,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.05123343136666736,
+          "oos_return": -0.10056975113144284,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "장기 추세 필터",
@@ -297,7 +297,7 @@
         },
         {
           "fold": 14,
-          "oos_return": -0.11750408799803347,
+          "oos_return": 0.004407008143685109,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "MACD 히스토그램",
@@ -306,7 +306,7 @@
         },
         {
           "fold": 15,
-          "oos_return": 0.0034410337563828275,
+          "oos_return": -0.016978732156883947,
           "picks": {
             "BULL": "윌리엄스 %R",
             "BEAR": "MACD 히스토그램",
@@ -316,19 +316,490 @@
       ]
     },
     {
+      "timeframe": "6h",
+      "cost_multiplier": 2.0,
+      "folds": 16,
+      "oos_total_return": -0.7087772157616368,
+      "oos_sharpe": -1.3856114923788865,
+      "oos_mdd": -0.3020810227033196,
+      "oos_trades": 374,
+      "oos_turnover": 207.00414105162585,
+      "oos_consistency": 0.25,
+      "per_fold": [
+        {
+          "fold": 0,
+          "oos_return": -0.11410435465167812,
+          "picks": {
+            "BULL": "삼중 EMA",
+            "BEAR": "윌리엄스 %R",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        },
+        {
+          "fold": 1,
+          "oos_return": -0.04412461334856299,
+          "picks": {
+            "BULL": "MACD 히스토그램",
+            "BEAR": "MACD 히스토그램",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 2,
+          "oos_return": -0.13479662567930595,
+          "picks": {
+            "BULL": "도니안 채널 돌파",
+            "BEAR": "이치모쿠 구름",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 3,
+          "oos_return": -0.14060482798787077,
+          "picks": {
+            "BULL": "도니안 채널 돌파",
+            "BEAR": "RSI + 볼린저 밴드",
+            "SIDEWAYS": "장기 추세 필터"
+          }
+        },
+        {
+          "fold": 4,
+          "oos_return": -0.061109331202338746,
+          "picks": {
+            "BULL": "도니안 채널 돌파",
+            "BEAR": "하이킨아시 추세추종",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 5,
+          "oos_return": 0.08540564181178856,
+          "picks": {
+            "BULL": "Z-Score 평균회귀",
+            "BEAR": "RSI + 볼린저 밴드",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        },
+        {
+          "fold": 6,
+          "oos_return": -0.27246259197024103,
+          "picks": {
+            "BULL": "MACD 히스토그램",
+            "BEAR": "RSI + 볼린저 밴드",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        },
+        {
+          "fold": 7,
+          "oos_return": 0.08196594799955337,
+          "picks": {
+            "BULL": "도니안 채널 돌파",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "Z-Score 평균회귀"
+          }
+        },
+        {
+          "fold": 8,
+          "oos_return": 0.026113185140158368,
+          "picks": {
+            "BULL": "EMA 크로스오버",
+            "BEAR": "MACD 히스토그램",
+            "SIDEWAYS": "Z-Score 평균회귀"
+          }
+        },
+        {
+          "fold": 9,
+          "oos_return": 0.005245348654271176,
+          "picks": {
+            "BULL": "RSI + 볼린저 밴드",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "Z-Score 평균회귀"
+          }
+        },
+        {
+          "fold": 10,
+          "oos_return": -0.015085093612698941,
+          "picks": {
+            "BULL": "듀얼 모멘텀",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 11,
+          "oos_return": -0.18272586648229383,
+          "picks": {
+            "BULL": "장기 추세 필터",
+            "BEAR": "윌리엄스 %R",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        },
+        {
+          "fold": 12,
+          "oos_return": -0.1293576437974956,
+          "picks": {
+            "BULL": "하이킨아시 추세추종",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "장기 추세 필터"
+          }
+        },
+        {
+          "fold": 13,
+          "oos_return": -0.042280631139247515,
+          "picks": {
+            "BULL": "MACD 히스토그램",
+            "BEAR": "스토캐스틱 RSI",
+            "SIDEWAYS": "장기 추세 필터"
+          }
+        },
+        {
+          "fold": 14,
+          "oos_return": -0.08256317898615229,
+          "picks": {
+            "BULL": "MACD 히스토그램",
+            "BEAR": "스토캐스틱 RSI",
+            "SIDEWAYS": "윌리엄스 %R"
+          }
+        },
+        {
+          "fold": 15,
+          "oos_return": -0.09224983221606675,
+          "picks": {
+            "BULL": "RSI + 볼린저 밴드",
+            "BEAR": "스토캐스틱 RSI",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        }
+      ]
+    },
+    {
+      "timeframe": "6h",
+      "cost_multiplier": 1.0,
+      "folds": 16,
+      "oos_total_return": -0.5220162176680968,
+      "oos_sharpe": -0.7303427004381031,
+      "oos_mdd": -0.2758977431361087,
+      "oos_trades": 375,
+      "oos_turnover": 214.99563988745916,
+      "oos_consistency": 0.3125,
+      "per_fold": [
+        {
+          "fold": 0,
+          "oos_return": -0.09042446981392449,
+          "picks": {
+            "BULL": "삼중 EMA",
+            "BEAR": "윌리엄스 %R",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        },
+        {
+          "fold": 1,
+          "oos_return": -0.0072974305451508625,
+          "picks": {
+            "BULL": "MACD 히스토그램",
+            "BEAR": "MACD 히스토그램",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 2,
+          "oos_return": -0.11352615162089819,
+          "picks": {
+            "BULL": "도니안 채널 돌파",
+            "BEAR": "이치모쿠 구름",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 3,
+          "oos_return": -0.11948279526055694,
+          "picks": {
+            "BULL": "도니안 채널 돌파",
+            "BEAR": "RSI + 볼린저 밴드",
+            "SIDEWAYS": "장기 추세 필터"
+          }
+        },
+        {
+          "fold": 4,
+          "oos_return": -0.03690463533016897,
+          "picks": {
+            "BULL": "도니안 채널 돌파",
+            "BEAR": "하이킨아시 추세추종",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 5,
+          "oos_return": 0.10968005263288227,
+          "picks": {
+            "BULL": "Z-Score 평균회귀",
+            "BEAR": "RSI + 볼린저 밴드",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        },
+        {
+          "fold": 6,
+          "oos_return": -0.24331762137911372,
+          "picks": {
+            "BULL": "MACD 히스토그램",
+            "BEAR": "RSI + 볼린저 밴드",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        },
+        {
+          "fold": 7,
+          "oos_return": 0.10261968578041913,
+          "picks": {
+            "BULL": "도니안 채널 돌파",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "Z-Score 평균회귀"
+          }
+        },
+        {
+          "fold": 8,
+          "oos_return": 0.03933901786615435,
+          "picks": {
+            "BULL": "EMA 크로스오버",
+            "BEAR": "MACD 히스토그램",
+            "SIDEWAYS": "Z-Score 평균회귀"
+          }
+        },
+        {
+          "fold": 9,
+          "oos_return": 0.012812982309157839,
+          "picks": {
+            "BULL": "RSI + 볼린저 밴드",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "Z-Score 평균회귀"
+          }
+        },
+        {
+          "fold": 10,
+          "oos_return": 0.0018706921050237746,
+          "picks": {
+            "BULL": "듀얼 모멘텀",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 11,
+          "oos_return": -0.14770034885883465,
+          "picks": {
+            "BULL": "장기 추세 필터",
+            "BEAR": "윌리엄스 %R",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        },
+        {
+          "fold": 12,
+          "oos_return": -0.03951194185257434,
+          "picks": {
+            "BULL": "하이킨아시 추세추종",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "장기 추세 필터"
+          }
+        },
+        {
+          "fold": 13,
+          "oos_return": -0.0025199156995301397,
+          "picks": {
+            "BULL": "MACD 히스토그램",
+            "BEAR": "스토캐스틱 RSI",
+            "SIDEWAYS": "장기 추세 필터"
+          }
+        },
+        {
+          "fold": 14,
+          "oos_return": -0.05470546274811117,
+          "picks": {
+            "BULL": "MACD 히스토그램",
+            "BEAR": "스토캐스틱 RSI",
+            "SIDEWAYS": "윌리엄스 %R"
+          }
+        },
+        {
+          "fold": 15,
+          "oos_return": -0.06568953427916469,
+          "picks": {
+            "BULL": "RSI + 볼린저 밴드",
+            "BEAR": "스토캐스틱 RSI",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        }
+      ]
+    },
+    {
+      "timeframe": "8h",
+      "cost_multiplier": 1.0,
+      "folds": 16,
+      "oos_total_return": -0.4066452220754494,
+      "oos_sharpe": -0.6496812241325045,
+      "oos_mdd": -0.3166808377987966,
+      "oos_trades": 303,
+      "oos_turnover": 178.8811187716796,
+      "oos_consistency": 0.3125,
+      "per_fold": [
+        {
+          "fold": 0,
+          "oos_return": -0.1014823627422119,
+          "picks": {
+            "BULL": "장기 추세 필터",
+            "BEAR": "윌리엄스 %R",
+            "SIDEWAYS": "EMA 크로스오버"
+          }
+        },
+        {
+          "fold": 1,
+          "oos_return": 0.37516440148983965,
+          "picks": {
+            "BULL": "MACD 히스토그램",
+            "BEAR": "윌리엄스 %R",
+            "SIDEWAYS": "장기 추세 필터"
+          }
+        },
+        {
+          "fold": 2,
+          "oos_return": -0.13850140992091042,
+          "picks": {
+            "BULL": "도니안 채널 돌파",
+            "BEAR": "듀얼 모멘텀",
+            "SIDEWAYS": "장기 추세 필터"
+          }
+        },
+        {
+          "fold": 3,
+          "oos_return": -0.0217137627267161,
+          "picks": {
+            "BULL": "MACD 히스토그램",
+            "BEAR": "변동성 돌파",
+            "SIDEWAYS": "장기 추세 필터"
+          }
+        },
+        {
+          "fold": 4,
+          "oos_return": -0.08055258951719657,
+          "picks": {
+            "BULL": "도니안 채널 돌파",
+            "BEAR": "변동성 돌파",
+            "SIDEWAYS": "이치모쿠 구름"
+          }
+        },
+        {
+          "fold": 5,
+          "oos_return": 0.0029630646882845557,
+          "picks": {
+            "BULL": "머니플로우 지수 (MFI)",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "MACD 히스토그램"
+          }
+        },
+        {
+          "fold": 6,
+          "oos_return": -0.03632440457034247,
+          "picks": {
+            "BULL": "듀얼 모멘텀",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "MACD 히스토그램"
+          }
+        },
+        {
+          "fold": 7,
+          "oos_return": 0.03916120550931024,
+          "picks": {
+            "BULL": "듀얼 모멘텀",
+            "BEAR": "RSI + 볼린저 밴드",
+            "SIDEWAYS": "Z-Score 평균회귀"
+          }
+        },
+        {
+          "fold": 8,
+          "oos_return": -0.0036468679727267306,
+          "picks": {
+            "BULL": "듀얼 모멘텀",
+            "BEAR": "머니플로우 지수 (MFI)",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 9,
+          "oos_return": 0.006066395599087393,
+          "picks": {
+            "BULL": "RSI + 볼린저 밴드",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 10,
+          "oos_return": -0.005751262657575196,
+          "picks": {
+            "BULL": "스토캐스틱 RSI",
+            "BEAR": "Z-Score 평균회귀",
+            "SIDEWAYS": "삼중 EMA"
+          }
+        },
+        {
+          "fold": 11,
+          "oos_return": -0.08204338607711237,
+          "picks": {
+            "BULL": "RSI + 볼린저 밴드",
+            "BEAR": "윌리엄스 %R",
+            "SIDEWAYS": "변동성 돌파"
+          }
+        },
+        {
+          "fold": 12,
+          "oos_return": -0.27004878800455034,
+          "picks": {
+            "BULL": "변동성 돌파",
+            "BEAR": "RSI + 볼린저 밴드",
+            "SIDEWAYS": "변동성 돌파"
+          }
+        },
+        {
+          "fold": 13,
+          "oos_return": -0.07154705977928233,
+          "picks": {
+            "BULL": "변동성 돌파",
+            "BEAR": "듀얼 모멘텀",
+            "SIDEWAYS": "하이킨아시 추세추종"
+          }
+        },
+        {
+          "fold": 14,
+          "oos_return": 0.04427907515955831,
+          "picks": {
+            "BULL": "하이킨아시 추세추종",
+            "BEAR": "장기 추세 필터",
+            "SIDEWAYS": "윌리엄스 %R"
+          }
+        },
+        {
+          "fold": 15,
+          "oos_return": -0.04707298570889917,
+          "picks": {
+            "BULL": "Z-Score 평균회귀",
+            "BEAR": "EMA 크로스오버",
+            "SIDEWAYS": "Z-Score 평균회귀"
+          }
+        }
+      ]
+    },
+    {
       "timeframe": "8h",
       "cost_multiplier": 2.0,
       "folds": 16,
-      "oos_total_return": -0.5951065031713652,
-      "oos_sharpe": -1.176934234768797,
-      "oos_mdd": -0.23606512526859863,
-      "oos_trades": 220,
-      "oos_turnover": 109.60360717338901,
+      "oos_total_return": -0.6091303170578921,
+      "oos_sharpe": -1.2557743900541531,
+      "oos_mdd": -0.33327579246775185,
+      "oos_trades": 305,
+      "oos_turnover": 173.58642193087124,
       "oos_consistency": 0.1875,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.17325046508649755,
+          "oos_return": -0.12132869512684652,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "윌리엄스 %R",
@@ -337,7 +808,7 @@
         },
         {
           "fold": 1,
-          "oos_return": -0.0183563200185326,
+          "oos_return": 0.32137655250736685,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "윌리엄스 %R",
@@ -346,7 +817,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.09146234201184522,
+          "oos_return": -0.1555635894182833,
           "picks": {
             "BULL": "도니안 채널 돌파",
             "BEAR": "듀얼 모멘텀",
@@ -355,7 +826,7 @@
         },
         {
           "fold": 3,
-          "oos_return": -0.2173239675755979,
+          "oos_return": -0.05274095559034564,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "변동성 돌파",
@@ -364,164 +835,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.02654628935481118,
-          "picks": {
-            "BULL": "도니안 채널 돌파",
-            "BEAR": "변동성 돌파",
-            "SIDEWAYS": "이치모쿠 구름"
-          }
-        },
-        {
-          "fold": 5,
-          "oos_return": 0.08557998446011905,
-          "picks": {
-            "BULL": "머니플로우 지수 (MFI)",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "MACD 히스토그램"
-          }
-        },
-        {
-          "fold": 6,
-          "oos_return": -0.05827188404741879,
-          "picks": {
-            "BULL": "듀얼 모멘텀",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "MACD 히스토그램"
-          }
-        },
-        {
-          "fold": 7,
-          "oos_return": -0.1933401306481649,
-          "picks": {
-            "BULL": "듀얼 모멘텀",
-            "BEAR": "RSI + 볼린저 밴드",
-            "SIDEWAYS": "Z-Score 평균회귀"
-          }
-        },
-        {
-          "fold": 8,
-          "oos_return": -0.11243254077797915,
-          "picks": {
-            "BULL": "듀얼 모멘텀",
-            "BEAR": "머니플로우 지수 (MFI)",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 9,
-          "oos_return": -0.001473919692002501,
-          "picks": {
-            "BULL": "RSI + 볼린저 밴드",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 10,
-          "oos_return": -0.09530400560666541,
-          "picks": {
-            "BULL": "스토캐스틱 RSI",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 11,
-          "oos_return": -0.04811711239476102,
-          "picks": {
-            "BULL": "RSI + 볼린저 밴드",
-            "BEAR": "윌리엄스 %R",
-            "SIDEWAYS": "변동성 돌파"
-          }
-        },
-        {
-          "fold": 12,
-          "oos_return": 0.09177000088553133,
-          "picks": {
-            "BULL": "변동성 돌파",
-            "BEAR": "RSI + 볼린저 밴드",
-            "SIDEWAYS": "변동성 돌파"
-          }
-        },
-        {
-          "fold": 13,
-          "oos_return": -0.017461155493291414,
-          "picks": {
-            "BULL": "변동성 돌파",
-            "BEAR": "듀얼 모멘텀",
-            "SIDEWAYS": "하이킨아시 추세추종"
-          }
-        },
-        {
-          "fold": 14,
-          "oos_return": 0.06749788166743986,
-          "picks": {
-            "BULL": "하이킨아시 추세추종",
-            "BEAR": "장기 추세 필터",
-            "SIDEWAYS": "윌리엄스 %R"
-          }
-        },
-        {
-          "fold": 15,
-          "oos_return": 0.0,
-          "picks": {
-            "BULL": "Z-Score 평균회귀",
-            "BEAR": "EMA 크로스오버",
-            "SIDEWAYS": "Z-Score 평균회귀"
-          }
-        }
-      ]
-    },
-    {
-      "timeframe": "8h",
-      "cost_multiplier": 1.0,
-      "folds": 16,
-      "oos_total_return": -0.4592189427746105,
-      "oos_sharpe": -0.7716941842228595,
-      "oos_mdd": -0.2298559928168683,
-      "oos_trades": 220,
-      "oos_turnover": 112.41282369187729,
-      "oos_consistency": 0.3125,
-      "per_fold": [
-        {
-          "fold": 0,
-          "oos_return": -0.156305192503974,
-          "picks": {
-            "BULL": "장기 추세 필터",
-            "BEAR": "윌리엄스 %R",
-            "SIDEWAYS": "EMA 크로스오버"
-          }
-        },
-        {
-          "fold": 1,
-          "oos_return": 0.006781305533555493,
-          "picks": {
-            "BULL": "MACD 히스토그램",
-            "BEAR": "윌리엄스 %R",
-            "SIDEWAYS": "장기 추세 필터"
-          }
-        },
-        {
-          "fold": 2,
-          "oos_return": -0.07278349292308317,
-          "picks": {
-            "BULL": "도니안 채널 돌파",
-            "BEAR": "듀얼 모멘텀",
-            "SIDEWAYS": "장기 추세 필터"
-          }
-        },
-        {
-          "fold": 3,
-          "oos_return": -0.20555346994018509,
-          "picks": {
-            "BULL": "MACD 히스토그램",
-            "BEAR": "변동성 돌파",
-            "SIDEWAYS": "장기 추세 필터"
-          }
-        },
-        {
-          "fold": 4,
-          "oos_return": -0.006112276286356355,
+          "oos_return": -0.12838937729725408,
           "picks": {
             "BULL": "도니안 채널 돌파",
             "BEAR": "변동성 돌파",
@@ -530,7 +844,7 @@
         },
         {
           "fold": 5,
-          "oos_return": 0.1106320368341116,
+          "oos_return": -0.013682108056974784,
           "picks": {
             "BULL": "머니플로우 지수 (MFI)",
             "BEAR": "Z-Score 평균회귀",
@@ -539,7 +853,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.037746254559247516,
+          "oos_return": -0.0661611100604581,
           "picks": {
             "BULL": "듀얼 모멘텀",
             "BEAR": "Z-Score 평균회귀",
@@ -548,7 +862,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.17876325332329168,
+          "oos_return": 0.032021816135995085,
           "picks": {
             "BULL": "듀얼 모멘텀",
             "BEAR": "RSI + 볼린저 밴드",
@@ -557,7 +871,7 @@
         },
         {
           "fold": 8,
-          "oos_return": -0.08181850477752739,
+          "oos_return": -0.03298430587889056,
           "picks": {
             "BULL": "듀얼 모멘텀",
             "BEAR": "머니플로우 지수 (MFI)",
@@ -566,7 +880,7 @@
         },
         {
           "fold": 9,
-          "oos_return": 0.016719106540385997,
+          "oos_return": -0.00351636901068908,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "Z-Score 평균회귀",
@@ -575,7 +889,7 @@
         },
         {
           "fold": 10,
-          "oos_return": -0.08056094396417102,
+          "oos_return": -0.024397967239582097,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "Z-Score 평균회귀",
@@ -584,7 +898,7 @@
         },
         {
           "fold": 11,
-          "oos_return": -0.0320650027459054,
+          "oos_return": -0.12009170695244975,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "윌리엄스 %R",
@@ -593,7 +907,7 @@
         },
         {
           "fold": 12,
-          "oos_return": 0.1077983974251644,
+          "oos_return": -0.2888201259430948,
           "picks": {
             "BULL": "변동성 돌파",
             "BEAR": "RSI + 볼린저 밴드",
@@ -602,7 +916,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.0031775883728334398,
+          "oos_return": -0.10105195966975689,
           "picks": {
             "BULL": "변동성 돌파",
             "BEAR": "듀얼 모멘텀",
@@ -611,7 +925,7 @@
         },
         {
           "fold": 14,
-          "oos_return": 0.07997183471453995,
+          "oos_return": 0.025696424100668525,
           "picks": {
             "BULL": "하이킨아시 추세추종",
             "BEAR": "장기 추세 필터",
@@ -620,343 +934,29 @@
         },
         {
           "fold": 15,
-          "oos_return": 0.0,
+          "oos_return": -0.06352478741246248,
           "picks": {
             "BULL": "Z-Score 평균회귀",
             "BEAR": "EMA 크로스오버",
             "SIDEWAYS": "Z-Score 평균회귀"
-          }
-        }
-      ]
-    },
-    {
-      "timeframe": "6h",
-      "cost_multiplier": 2.0,
-      "folds": 16,
-      "oos_total_return": -0.5982132427057675,
-      "oos_sharpe": -1.0352190544191902,
-      "oos_mdd": -0.308049333610364,
-      "oos_trades": 304,
-      "oos_turnover": 150.985204849066,
-      "oos_consistency": 0.3125,
-      "per_fold": [
-        {
-          "fold": 0,
-          "oos_return": -0.19055340799958764,
-          "picks": {
-            "BULL": "삼중 EMA",
-            "BEAR": "윌리엄스 %R",
-            "SIDEWAYS": "EMA 크로스오버"
-          }
-        },
-        {
-          "fold": 1,
-          "oos_return": 0.1815006078582695,
-          "picks": {
-            "BULL": "MACD 히스토그램",
-            "BEAR": "MACD 히스토그램",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 2,
-          "oos_return": -0.09295604111457545,
-          "picks": {
-            "BULL": "도니안 채널 돌파",
-            "BEAR": "이치모쿠 구름",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 3,
-          "oos_return": -0.21372507819791287,
-          "picks": {
-            "BULL": "도니안 채널 돌파",
-            "BEAR": "RSI + 볼린저 밴드",
-            "SIDEWAYS": "장기 추세 필터"
-          }
-        },
-        {
-          "fold": 4,
-          "oos_return": -0.17705320636858823,
-          "picks": {
-            "BULL": "도니안 채널 돌파",
-            "BEAR": "하이킨아시 추세추종",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 5,
-          "oos_return": -0.08636594546841347,
-          "picks": {
-            "BULL": "Z-Score 평균회귀",
-            "BEAR": "RSI + 볼린저 밴드",
-            "SIDEWAYS": "EMA 크로스오버"
-          }
-        },
-        {
-          "fold": 6,
-          "oos_return": -0.03158986312870293,
-          "picks": {
-            "BULL": "MACD 히스토그램",
-            "BEAR": "RSI + 볼린저 밴드",
-            "SIDEWAYS": "EMA 크로스오버"
-          }
-        },
-        {
-          "fold": 7,
-          "oos_return": -0.04542059794056397,
-          "picks": {
-            "BULL": "도니안 채널 돌파",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "Z-Score 평균회귀"
-          }
-        },
-        {
-          "fold": 8,
-          "oos_return": 0.07288661149272757,
-          "picks": {
-            "BULL": "EMA 크로스오버",
-            "BEAR": "MACD 히스토그램",
-            "SIDEWAYS": "Z-Score 평균회귀"
-          }
-        },
-        {
-          "fold": 9,
-          "oos_return": 0.008392745857840556,
-          "picks": {
-            "BULL": "RSI + 볼린저 밴드",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "Z-Score 평균회귀"
-          }
-        },
-        {
-          "fold": 10,
-          "oos_return": -0.08554656535594829,
-          "picks": {
-            "BULL": "듀얼 모멘텀",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 11,
-          "oos_return": -0.12916708488808115,
-          "picks": {
-            "BULL": "장기 추세 필터",
-            "BEAR": "윌리엄스 %R",
-            "SIDEWAYS": "EMA 크로스오버"
-          }
-        },
-        {
-          "fold": 12,
-          "oos_return": 0.013956876317573252,
-          "picks": {
-            "BULL": "하이킨아시 추세추종",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "장기 추세 필터"
-          }
-        },
-        {
-          "fold": 13,
-          "oos_return": -0.09707797571582866,
-          "picks": {
-            "BULL": "MACD 히스토그램",
-            "BEAR": "스토캐스틱 RSI",
-            "SIDEWAYS": "장기 추세 필터"
-          }
-        },
-        {
-          "fold": 14,
-          "oos_return": 0.1255386085956134,
-          "picks": {
-            "BULL": "MACD 히스토그램",
-            "BEAR": "스토캐스틱 RSI",
-            "SIDEWAYS": "윌리엄스 %R"
-          }
-        },
-        {
-          "fold": 15,
-          "oos_return": -0.04534777156420888,
-          "picks": {
-            "BULL": "RSI + 볼린저 밴드",
-            "BEAR": "스토캐스틱 RSI",
-            "SIDEWAYS": "EMA 크로스오버"
-          }
-        }
-      ]
-    },
-    {
-      "timeframe": "6h",
-      "cost_multiplier": 1.0,
-      "folds": 16,
-      "oos_total_return": -0.41726670241984454,
-      "oos_sharpe": -0.5291798960964069,
-      "oos_mdd": -0.2855344433352891,
-      "oos_trades": 303,
-      "oos_turnover": 155.09186760306514,
-      "oos_consistency": 0.3125,
-      "per_fold": [
-        {
-          "fold": 0,
-          "oos_return": -0.1705195873702292,
-          "picks": {
-            "BULL": "삼중 EMA",
-            "BEAR": "윌리엄스 %R",
-            "SIDEWAYS": "EMA 크로스오버"
-          }
-        },
-        {
-          "fold": 1,
-          "oos_return": 0.21670483697084975,
-          "picks": {
-            "BULL": "MACD 히스토그램",
-            "BEAR": "MACD 히스토그램",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 2,
-          "oos_return": -0.06908014445921662,
-          "picks": {
-            "BULL": "도니안 채널 돌파",
-            "BEAR": "이치모쿠 구름",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 3,
-          "oos_return": -0.18228925226231063,
-          "picks": {
-            "BULL": "도니안 채널 돌파",
-            "BEAR": "RSI + 볼린저 밴드",
-            "SIDEWAYS": "장기 추세 필터"
-          }
-        },
-        {
-          "fold": 4,
-          "oos_return": -0.15427193864986466,
-          "picks": {
-            "BULL": "도니안 채널 돌파",
-            "BEAR": "하이킨아시 추세추종",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 5,
-          "oos_return": -0.05230332996758136,
-          "picks": {
-            "BULL": "Z-Score 평균회귀",
-            "BEAR": "RSI + 볼린저 밴드",
-            "SIDEWAYS": "EMA 크로스오버"
-          }
-        },
-        {
-          "fold": 6,
-          "oos_return": -0.0022358980856846955,
-          "picks": {
-            "BULL": "MACD 히스토그램",
-            "BEAR": "RSI + 볼린저 밴드",
-            "SIDEWAYS": "EMA 크로스오버"
-          }
-        },
-        {
-          "fold": 7,
-          "oos_return": -0.020004112568517307,
-          "picks": {
-            "BULL": "도니안 채널 돌파",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "Z-Score 평균회귀"
-          }
-        },
-        {
-          "fold": 8,
-          "oos_return": 0.08352126144814198,
-          "picks": {
-            "BULL": "EMA 크로스오버",
-            "BEAR": "MACD 히스토그램",
-            "SIDEWAYS": "Z-Score 평균회귀"
-          }
-        },
-        {
-          "fold": 9,
-          "oos_return": 0.021555794685571117,
-          "picks": {
-            "BULL": "RSI + 볼린저 밴드",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "Z-Score 평균회귀"
-          }
-        },
-        {
-          "fold": 10,
-          "oos_return": -0.07019720285029141,
-          "picks": {
-            "BULL": "듀얼 모멘텀",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "삼중 EMA"
-          }
-        },
-        {
-          "fold": 11,
-          "oos_return": -0.10696363927044694,
-          "picks": {
-            "BULL": "장기 추세 필터",
-            "BEAR": "윌리엄스 %R",
-            "SIDEWAYS": "EMA 크로스오버"
-          }
-        },
-        {
-          "fold": 12,
-          "oos_return": 0.0392873968166747,
-          "picks": {
-            "BULL": "하이킨아시 추세추종",
-            "BEAR": "Z-Score 평균회귀",
-            "SIDEWAYS": "장기 추세 필터"
-          }
-        },
-        {
-          "fold": 13,
-          "oos_return": -0.0833443618555294,
-          "picks": {
-            "BULL": "MACD 히스토그램",
-            "BEAR": "스토캐스틱 RSI",
-            "SIDEWAYS": "장기 추세 필터"
-          }
-        },
-        {
-          "fold": 14,
-          "oos_return": 0.1438747466385646,
-          "picks": {
-            "BULL": "MACD 히스토그램",
-            "BEAR": "스토캐스틱 RSI",
-            "SIDEWAYS": "윌리엄스 %R"
-          }
-        },
-        {
-          "fold": 15,
-          "oos_return": -0.03365016745380578,
-          "picks": {
-            "BULL": "RSI + 볼린저 밴드",
-            "BEAR": "스토캐스틱 RSI",
-            "SIDEWAYS": "EMA 크로스오버"
           }
         }
       ]
     },
     {
       "timeframe": "4h",
-      "cost_multiplier": 2.0,
+      "cost_multiplier": 1.0,
       "folds": 16,
-      "oos_total_return": -0.21929995863555396,
-      "oos_sharpe": -0.2541040313573697,
-      "oos_mdd": -0.24369412032492602,
-      "oos_trades": 368,
-      "oos_turnover": 191.64719851465912,
-      "oos_consistency": 0.5,
+      "oos_total_return": -0.6511305874031923,
+      "oos_sharpe": -1.303203560642116,
+      "oos_mdd": -0.28038337267866537,
+      "oos_trades": 395,
+      "oos_turnover": 211.6263301641924,
+      "oos_consistency": 0.25,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.15429875657407044,
+          "oos_return": -0.15638602991357353,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "스토캐스틱 RSI",
@@ -965,7 +965,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.2620784399208653,
+          "oos_return": 0.28045775319009403,
           "picks": {
             "BULL": "도니안 채널 돌파",
             "BEAR": "EMA 크로스오버",
@@ -974,7 +974,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.19340428658273556,
+          "oos_return": -0.07415336896610136,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "윌리엄스 %R",
@@ -983,7 +983,7 @@
         },
         {
           "fold": 3,
-          "oos_return": 0.01705642884446057,
+          "oos_return": -0.2198189079420947,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "윌리엄스 %R",
@@ -992,7 +992,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.15746407628893666,
+          "oos_return": -0.03818219617800789,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "듀얼 모멘텀",
@@ -1001,7 +1001,7 @@
         },
         {
           "fold": 5,
-          "oos_return": 0.11669063305496152,
+          "oos_return": -0.23041673258535367,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "듀얼 모멘텀",
@@ -1010,7 +1010,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.06533477700601042,
+          "oos_return": -0.09229919332726844,
           "picks": {
             "BULL": "도니안 채널 돌파",
             "BEAR": "변동성 돌파",
@@ -1019,7 +1019,7 @@
         },
         {
           "fold": 7,
-          "oos_return": 0.13040649272241978,
+          "oos_return": -0.09064567976884597,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "Z-Score 평균회귀",
@@ -1028,7 +1028,7 @@
         },
         {
           "fold": 8,
-          "oos_return": 0.05986049052780107,
+          "oos_return": 0.10189012016198085,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "이치모쿠 구름",
@@ -1037,7 +1037,7 @@
         },
         {
           "fold": 9,
-          "oos_return": 0.005228084880295247,
+          "oos_return": 0.06764789203359167,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "변동성 돌파",
@@ -1046,7 +1046,7 @@
         },
         {
           "fold": 10,
-          "oos_return": -0.03120924773298961,
+          "oos_return": 0.008063211726452524,
           "picks": {
             "BULL": "듀얼 모멘텀",
             "BEAR": "변동성 돌파",
@@ -1055,7 +1055,7 @@
         },
         {
           "fold": 11,
-          "oos_return": -0.07628971668233109,
+          "oos_return": -0.0938956829109191,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "윌리엄스 %R",
@@ -1064,7 +1064,7 @@
         },
         {
           "fold": 12,
-          "oos_return": 0.03663039579303384,
+          "oos_return": -0.11302436403575189,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "RSI + 볼린저 밴드",
@@ -1073,7 +1073,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.202612248950241,
+          "oos_return": -0.07948030568266962,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "스토캐스틱 RSI",
@@ -1082,7 +1082,7 @@
         },
         {
           "fold": 14,
-          "oos_return": 0.23172601759286837,
+          "oos_return": -0.11624970573620619,
           "picks": {
             "BULL": "머니플로우 지수 (MFI)",
             "BEAR": "스토캐스틱 RSI",
@@ -1091,7 +1091,7 @@
         },
         {
           "fold": 15,
-          "oos_return": -0.07598035344926168,
+          "oos_return": -0.05618152717961977,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "도니안 채널 돌파",
@@ -1102,18 +1102,18 @@
     },
     {
       "timeframe": "4h",
-      "cost_multiplier": 1.0,
+      "cost_multiplier": 2.0,
       "folds": 16,
-      "oos_total_return": 0.10379157775098613,
-      "oos_sharpe": 0.2251225613535997,
-      "oos_mdd": -0.2296896667029991,
-      "oos_trades": 370,
-      "oos_turnover": 197.28627645120918,
-      "oos_consistency": 0.5,
+      "oos_total_return": -0.7868405920954764,
+      "oos_sharpe": -1.9708403563330457,
+      "oos_mdd": -0.2970537897642735,
+      "oos_trades": 397,
+      "oos_turnover": 206.49086864217801,
+      "oos_consistency": 0.1875,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.13053888013052717,
+          "oos_return": -0.2028180478379198,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "스토캐스틱 RSI",
@@ -1122,7 +1122,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.27600213321126743,
+          "oos_return": 0.26572816446950465,
           "picks": {
             "BULL": "도니안 채널 돌파",
             "BEAR": "EMA 크로스오버",
@@ -1131,7 +1131,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.17439861226457953,
+          "oos_return": -0.09461059926781457,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "윌리엄스 %R",
@@ -1140,7 +1140,7 @@
         },
         {
           "fold": 3,
-          "oos_return": 0.04046009029649267,
+          "oos_return": -0.24119140184626364,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "윌리엄스 %R",
@@ -1149,7 +1149,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.13317530144136713,
+          "oos_return": -0.07377290007611026,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "듀얼 모멘텀",
@@ -1158,7 +1158,7 @@
         },
         {
           "fold": 5,
-          "oos_return": 0.15169445433740458,
+          "oos_return": -0.24878057251923402,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "듀얼 모멘텀",
@@ -1167,7 +1167,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.040537245852315995,
+          "oos_return": -0.1283723315589098,
           "picks": {
             "BULL": "도니안 채널 돌파",
             "BEAR": "변동성 돌파",
@@ -1176,7 +1176,7 @@
         },
         {
           "fold": 7,
-          "oos_return": 0.1677286737627921,
+          "oos_return": -0.10214969545524921,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "Z-Score 평균회귀",
@@ -1185,7 +1185,7 @@
         },
         {
           "fold": 8,
-          "oos_return": 0.0763683785190854,
+          "oos_return": 0.08665937754362596,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "이치모쿠 구름",
@@ -1194,7 +1194,7 @@
         },
         {
           "fold": 9,
-          "oos_return": 0.028754210884256448,
+          "oos_return": 0.0449494582619947,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "변동성 돌파",
@@ -1203,7 +1203,7 @@
         },
         {
           "fold": 10,
-          "oos_return": -0.01025392240310774,
+          "oos_return": -0.02107785624977443,
           "picks": {
             "BULL": "듀얼 모멘텀",
             "BEAR": "변동성 돌파",
@@ -1212,7 +1212,7 @@
         },
         {
           "fold": 11,
-          "oos_return": -0.055824981672078944,
+          "oos_return": -0.11895209190103462,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "윌리엄스 %R",
@@ -1221,7 +1221,7 @@
         },
         {
           "fold": 12,
-          "oos_return": 0.025996935520568476,
+          "oos_return": -0.17265089082532203,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "RSI + 볼린저 밴드",
@@ -1230,7 +1230,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.1741962728620633,
+          "oos_return": -0.13009991383131736,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "스토캐스틱 RSI",
@@ -1239,7 +1239,7 @@
         },
         {
           "fold": 14,
-          "oos_return": 0.2544944204612638,
+          "oos_return": -0.13998263804737543,
           "picks": {
             "BULL": "머니플로우 지수 (MFI)",
             "BEAR": "스토캐스틱 RSI",
@@ -1248,7 +1248,7 @@
         },
         {
           "fold": 15,
-          "oos_return": -0.058521160053130905,
+          "oos_return": -0.06842478158670628,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "도니안 채널 돌파",
@@ -1261,12 +1261,12 @@
       "timeframe": "3d",
       "cost_multiplier": 1.0,
       "folds": 16,
-      "oos_total_return": -0.5397365163690087,
-      "oos_sharpe": -1.1050437532379997,
-      "oos_mdd": -0.16913749936144226,
-      "oos_trades": 74,
-      "oos_turnover": 29.837771314116534,
-      "oos_consistency": 0.1875,
+      "oos_total_return": -0.5486915200130194,
+      "oos_sharpe": -0.9595295226219311,
+      "oos_mdd": -0.28029562457925605,
+      "oos_trades": 87,
+      "oos_turnover": 58.491739910037175,
+      "oos_consistency": 0.25,
       "per_fold": [
         {
           "fold": 0,
@@ -1279,7 +1279,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.0356153137281523,
+          "oos_return": -0.12359485532682701,
           "picks": {
             "BULL": "변동성 돌파",
             "BEAR": "EMA 크로스오버",
@@ -1288,7 +1288,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.06427673071795847,
+          "oos_return": -0.2028014350459768,
           "picks": {
             "BULL": "이치모쿠 구름",
             "BEAR": "EMA 크로스오버",
@@ -1297,7 +1297,7 @@
         },
         {
           "fold": 3,
-          "oos_return": -0.11520710264636691,
+          "oos_return": -0.0004582564424748803,
           "picks": {
             "BULL": "하이킨아시 추세추종",
             "BEAR": "EMA 크로스오버",
@@ -1306,7 +1306,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.03636819963606941,
+          "oos_return": 0.0012009136993940128,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1315,7 +1315,7 @@
         },
         {
           "fold": 5,
-          "oos_return": -0.14239621905200284,
+          "oos_return": -0.26498704348856683,
           "picks": {
             "BULL": "Z-Score 평균회귀",
             "BEAR": "EMA 크로스오버",
@@ -1324,7 +1324,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.12836580836950628,
+          "oos_return": -0.13191986333039962,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1333,7 +1333,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.018756622361417508,
+          "oos_return": -0.11024050111997419,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "EMA 크로스오버",
@@ -1342,7 +1342,7 @@
         },
         {
           "fold": 8,
-          "oos_return": -0.0004979012370717184,
+          "oos_return": 0.1864720538906861,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "EMA 크로스오버",
@@ -1351,7 +1351,7 @@
         },
         {
           "fold": 9,
-          "oos_return": 0.03987535101564088,
+          "oos_return": -0.03326924084162608,
           "picks": {
             "BULL": "윌리엄스 %R",
             "BEAR": "EMA 크로스오버",
@@ -1369,7 +1369,7 @@
         },
         {
           "fold": 11,
-          "oos_return": -0.12051348430056097,
+          "oos_return": 0.0970172002466696,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "EMA 크로스오버",
@@ -1378,7 +1378,7 @@
         },
         {
           "fold": 12,
-          "oos_return": -0.04955710285037895,
+          "oos_return": 0.12234111516085622,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "EMA 크로스오버",
@@ -1387,7 +1387,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.04992907431963867,
+          "oos_return": -0.08281167935338596,
           "picks": {
             "BULL": "윌리엄스 %R",
             "BEAR": "EMA 크로스오버",
@@ -1396,7 +1396,7 @@
         },
         {
           "fold": 14,
-          "oos_return": 0.015457084574430402,
+          "oos_return": -0.06281777659191856,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "윌리엄스 %R",
@@ -1405,7 +1405,7 @@
         },
         {
           "fold": 15,
-          "oos_return": -0.04651195595815438,
+          "oos_return": -0.01437570638049801,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "Z-Score 평균회귀",
@@ -1418,11 +1418,11 @@
       "timeframe": "3d",
       "cost_multiplier": 2.0,
       "folds": 16,
-      "oos_total_return": -0.6439602203193472,
-      "oos_sharpe": -1.4715158292712427,
-      "oos_mdd": -0.21831742389978012,
-      "oos_trades": 79,
-      "oos_turnover": 29.437064647091596,
+      "oos_total_return": -0.6360605026618914,
+      "oos_sharpe": -1.3024914474612124,
+      "oos_mdd": -0.2893379515085796,
+      "oos_trades": 89,
+      "oos_turnover": 55.01921867812669,
       "oos_consistency": 0.1875,
       "per_fold": [
         {
@@ -1436,7 +1436,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.0325489456551844,
+          "oos_return": -0.13063668814236606,
           "picks": {
             "BULL": "변동성 돌파",
             "BEAR": "EMA 크로스오버",
@@ -1445,7 +1445,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.10770619287575145,
+          "oos_return": -0.21139256375256044,
           "picks": {
             "BULL": "이치모쿠 구름",
             "BEAR": "EMA 크로스오버",
@@ -1454,7 +1454,7 @@
         },
         {
           "fold": 3,
-          "oos_return": -0.12226039175661463,
+          "oos_return": -0.008103940436681722,
           "picks": {
             "BULL": "하이킨아시 추세추종",
             "BEAR": "EMA 크로스오버",
@@ -1463,7 +1463,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.03780756797463969,
+          "oos_return": -0.01041333403177791,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1472,7 +1472,7 @@
         },
         {
           "fold": 5,
-          "oos_return": -0.1513279762000611,
+          "oos_return": -0.2760764490207359,
           "picks": {
             "BULL": "Z-Score 평균회귀",
             "BEAR": "EMA 크로스오버",
@@ -1481,7 +1481,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.18284591370759962,
+          "oos_return": -0.19261146206095603,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1490,7 +1490,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.02163150678523007,
+          "oos_return": -0.11345285753654866,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "EMA 크로스오버",
@@ -1499,7 +1499,7 @@
         },
         {
           "fold": 8,
-          "oos_return": -0.005012339878487926,
+          "oos_return": 0.17754642431508438,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "EMA 크로스오버",
@@ -1508,7 +1508,7 @@
         },
         {
           "fold": 9,
-          "oos_return": 0.03421016576894376,
+          "oos_return": -0.03784311907951721,
           "picks": {
             "BULL": "윌리엄스 %R",
             "BEAR": "EMA 크로스오버",
@@ -1526,7 +1526,7 @@
         },
         {
           "fold": 11,
-          "oos_return": -0.1323824680497504,
+          "oos_return": 0.07883892141126791,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "EMA 크로스오버",
@@ -1535,7 +1535,7 @@
         },
         {
           "fold": 12,
-          "oos_return": -0.0861637344836701,
+          "oos_return": 0.1146639495057531,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "EMA 크로스오버",
@@ -1544,7 +1544,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.07311218206829218,
+          "oos_return": -0.10225475468871825,
           "picks": {
             "BULL": "윌리엄스 %R",
             "BEAR": "EMA 크로스오버",
@@ -1553,7 +1553,7 @@
         },
         {
           "fold": 14,
-          "oos_return": 0.0018928216796423314,
+          "oos_return": -0.07566900631248952,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "윌리엄스 %R",
@@ -1562,7 +1562,7 @@
         },
         {
           "fold": 15,
-          "oos_return": -0.05892765019243562,
+          "oos_return": -0.023992013794062905,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "Z-Score 평균회귀",
@@ -1573,18 +1573,18 @@
     },
     {
       "timeframe": "1d",
-      "cost_multiplier": 1.0,
+      "cost_multiplier": 2.0,
       "folds": 16,
-      "oos_total_return": 0.6036036869644974,
-      "oos_sharpe": 0.9426142083512538,
-      "oos_mdd": -0.1468914493794583,
-      "oos_trades": 107,
-      "oos_turnover": 66.30954781160405,
-      "oos_consistency": 0.5625,
+      "oos_total_return": -0.613046792628899,
+      "oos_sharpe": -0.9251843439466759,
+      "oos_mdd": -0.2785901895012241,
+      "oos_trades": 160,
+      "oos_turnover": 110.98704207200409,
+      "oos_consistency": 0.375,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.02027362363052887,
+          "oos_return": -0.046997563340186344,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "EMA 크로스오버",
@@ -1593,7 +1593,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.3409158859947312,
+          "oos_return": 0.3290980205596701,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "EMA 크로스오버",
@@ -1602,7 +1602,7 @@
         },
         {
           "fold": 2,
-          "oos_return": 0.09575786740252124,
+          "oos_return": -0.0683460786652983,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "EMA 크로스오버",
@@ -1611,7 +1611,7 @@
         },
         {
           "fold": 3,
-          "oos_return": -0.07542320428271476,
+          "oos_return": -0.14207912258087618,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "EMA 크로스오버",
@@ -1620,7 +1620,7 @@
         },
         {
           "fold": 4,
-          "oos_return": 0.010964630784562113,
+          "oos_return": -0.06086947624328143,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1629,7 +1629,7 @@
         },
         {
           "fold": 5,
-          "oos_return": 0.14659702416435394,
+          "oos_return": -0.25165883971538716,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "EMA 크로스오버",
@@ -1638,7 +1638,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.10534332369794108,
+          "oos_return": -0.1962169557571949,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "EMA 크로스오버",
@@ -1647,7 +1647,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.032451967057898545,
+          "oos_return": 0.026873810373507556,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "듀얼 모멘텀",
@@ -1656,7 +1656,7 @@
         },
         {
           "fold": 8,
-          "oos_return": 0.11028138126497877,
+          "oos_return": 0.1362432416373447,
           "picks": {
             "BULL": "이치모쿠 구름",
             "BEAR": "EMA 크로스오버",
@@ -1665,7 +1665,7 @@
         },
         {
           "fold": 9,
-          "oos_return": -0.06537008752716955,
+          "oos_return": 0.061492343009609485,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1674,7 +1674,7 @@
         },
         {
           "fold": 10,
-          "oos_return": -0.004418082365938658,
+          "oos_return": 0.042441507057469074,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1683,7 +1683,7 @@
         },
         {
           "fold": 11,
-          "oos_return": -0.04379545419994635,
+          "oos_return": -0.11693734637696107,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1692,7 +1692,7 @@
         },
         {
           "fold": 12,
-          "oos_return": 0.08672461339768889,
+          "oos_return": -0.20150940210403256,
           "picks": {
             "BULL": "Z-Score 평균회귀",
             "BEAR": "스토캐스틱 RSI",
@@ -1701,7 +1701,7 @@
         },
         {
           "fold": 13,
-          "oos_return": 0.045358880524108525,
+          "oos_return": -0.259342346266047,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "MACD 히스토그램",
@@ -1710,7 +1710,7 @@
         },
         {
           "fold": 14,
-          "oos_return": 0.04159510471003203,
+          "oos_return": 0.1049896677287987,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "EMA 크로스오버",
@@ -1719,7 +1719,7 @@
         },
         {
           "fold": 15,
-          "oos_return": 0.027242608172238114,
+          "oos_return": -0.09187185193055558,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "MACD 히스토그램",
@@ -1730,18 +1730,18 @@
     },
     {
       "timeframe": "1d",
-      "cost_multiplier": 2.0,
+      "cost_multiplier": 1.0,
       "folds": 16,
-      "oos_total_return": 0.3027939044236767,
-      "oos_sharpe": 0.6331731582978718,
-      "oos_mdd": -0.15172491681594072,
-      "oos_trades": 106,
-      "oos_turnover": 62.20156227040447,
-      "oos_consistency": 0.5,
+      "oos_total_return": -0.47647940341543116,
+      "oos_sharpe": -0.5488231347337917,
+      "oos_mdd": -0.25037448457591527,
+      "oos_trades": 157,
+      "oos_turnover": 115.834746570336,
+      "oos_consistency": 0.375,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.026947896094559054,
+          "oos_return": -0.03395745701393271,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "EMA 크로스오버",
@@ -1750,7 +1750,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.2599881635632506,
+          "oos_return": 0.413613496192929,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "EMA 크로스오버",
@@ -1759,7 +1759,7 @@
         },
         {
           "fold": 2,
-          "oos_return": 0.09492526530117829,
+          "oos_return": -0.06749710707950618,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "EMA 크로스오버",
@@ -1768,7 +1768,7 @@
         },
         {
           "fold": 3,
-          "oos_return": -0.09202396304674842,
+          "oos_return": -0.12767162416426403,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "EMA 크로스오버",
@@ -1777,7 +1777,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.002624388257300936,
+          "oos_return": -0.03944431431708795,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1786,7 +1786,7 @@
         },
         {
           "fold": 5,
-          "oos_return": 0.11210885020763706,
+          "oos_return": -0.24202371635789133,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "EMA 크로스오버",
@@ -1795,7 +1795,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.11589535792640948,
+          "oos_return": -0.18484689780666563,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "EMA 크로스오버",
@@ -1804,7 +1804,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.037304320214864406,
+          "oos_return": 0.029981073808505343,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "듀얼 모멘텀",
@@ -1813,7 +1813,7 @@
         },
         {
           "fold": 8,
-          "oos_return": 0.10117215573155058,
+          "oos_return": 0.14992778744212898,
           "picks": {
             "BULL": "이치모쿠 구름",
             "BEAR": "EMA 크로스오버",
@@ -1822,7 +1822,7 @@
         },
         {
           "fold": 9,
-          "oos_return": -0.07193445196581472,
+          "oos_return": 0.06944810483799224,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1831,7 +1831,7 @@
         },
         {
           "fold": 10,
-          "oos_return": -0.013867290628533091,
+          "oos_return": 0.05648684297092865,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1840,7 +1840,7 @@
         },
         {
           "fold": 11,
-          "oos_return": -0.04973364145776282,
+          "oos_return": -0.10519058002935455,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "EMA 크로스오버",
@@ -1849,7 +1849,7 @@
         },
         {
           "fold": 12,
-          "oos_return": 0.06969106992582552,
+          "oos_return": -0.1823884916879447,
           "picks": {
             "BULL": "Z-Score 평균회귀",
             "BEAR": "스토캐스틱 RSI",
@@ -1858,7 +1858,7 @@
         },
         {
           "fold": 13,
-          "oos_return": 0.04216167977360619,
+          "oos_return": -0.20841611680850936,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "MACD 히스토그램",
@@ -1867,7 +1867,7 @@
         },
         {
           "fold": 14,
-          "oos_return": 0.03534457086164977,
+          "oos_return": 0.11403001273288949,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "EMA 크로스오버",
@@ -1876,7 +1876,7 @@
         },
         {
           "fold": 15,
-          "oos_return": 0.02428918074789399,
+          "oos_return": -0.08026163855895185,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "MACD 히스토그램",
@@ -1889,16 +1889,16 @@
       "timeframe": "2h",
       "cost_multiplier": 2.0,
       "folds": 16,
-      "oos_total_return": -0.7570257987930423,
-      "oos_sharpe": -1.8260036860751176,
-      "oos_mdd": -0.3546943076268211,
-      "oos_trades": 746,
-      "oos_turnover": 370.79088632018374,
-      "oos_consistency": 0.375,
+      "oos_total_return": -0.8766172742572671,
+      "oos_sharpe": -2.8470277740405017,
+      "oos_mdd": -0.33061785015905315,
+      "oos_trades": 793,
+      "oos_turnover": 396.44144833415464,
+      "oos_consistency": 0.25,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.2713880903956941,
+          "oos_return": -0.25012099236192487,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "MACD 히스토그램",
@@ -1907,7 +1907,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.05029184467943648,
+          "oos_return": 0.07773420948732301,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "MACD 히스토그램",
@@ -1916,7 +1916,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.316147688032818,
+          "oos_return": 0.054107101636573285,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "Z-Score 평균회귀",
@@ -1925,7 +1925,7 @@
         },
         {
           "fold": 3,
-          "oos_return": 0.06087163345260738,
+          "oos_return": -0.06841262409016857,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "RSI + 볼린저 밴드",
@@ -1934,7 +1934,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.10792765373576108,
+          "oos_return": 0.020595440646347107,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "Z-Score 평균회귀",
@@ -1943,7 +1943,7 @@
         },
         {
           "fold": 5,
-          "oos_return": 0.14885836407529252,
+          "oos_return": -0.07665224245558311,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "Z-Score 평균회귀",
@@ -1952,7 +1952,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.2189618817244151,
+          "oos_return": -0.22030967424963643,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "Z-Score 평균회귀",
@@ -1961,7 +1961,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.08917288002637513,
+          "oos_return": -0.03127359129612872,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "Z-Score 평균회귀",
@@ -1970,7 +1970,7 @@
         },
         {
           "fold": 8,
-          "oos_return": 0.03673706764510598,
+          "oos_return": 0.04188103092309725,
           "picks": {
             "BULL": "듀얼 모멘텀",
             "BEAR": "스토캐스틱 RSI",
@@ -1979,7 +1979,7 @@
         },
         {
           "fold": 9,
-          "oos_return": -0.12763034261074346,
+          "oos_return": -0.1015248844019705,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "윌리엄스 %R",
@@ -1988,7 +1988,7 @@
         },
         {
           "fold": 10,
-          "oos_return": -0.022727237846866033,
+          "oos_return": -0.11511077254863156,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "스토캐스틱 RSI",
@@ -1997,7 +1997,7 @@
         },
         {
           "fold": 11,
-          "oos_return": -0.20714349497446882,
+          "oos_return": -0.14026940963793766,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2006,7 +2006,7 @@
         },
         {
           "fold": 12,
-          "oos_return": 0.1892997454275216,
+          "oos_return": -0.28022233750333747,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "Z-Score 평균회귀",
@@ -2015,7 +2015,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.23112758398422006,
+          "oos_return": -0.2793172873307972,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "삼중 EMA",
@@ -2024,7 +2024,7 @@
         },
         {
           "fold": 14,
-          "oos_return": 0.07183105527518441,
+          "oos_return": -0.31984571140946627,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2033,7 +2033,7 @@
         },
         {
           "fold": 15,
-          "oos_return": -0.1260180006499283,
+          "oos_return": -0.13068820528421232,
           "picks": {
             "BULL": "Z-Score 평균회귀",
             "BEAR": "이치모쿠 구름",
@@ -2046,16 +2046,16 @@
       "timeframe": "2h",
       "cost_multiplier": 1.0,
       "folds": 16,
-      "oos_total_return": -0.4907482337845763,
-      "oos_sharpe": -0.8162462238859023,
-      "oos_mdd": -0.3341484618000633,
-      "oos_trades": 744,
-      "oos_turnover": 382.2508201300035,
-      "oos_consistency": 0.4375,
+      "oos_total_return": -0.7317930603411902,
+      "oos_sharpe": -1.7745229457298037,
+      "oos_mdd": -0.2914127984141069,
+      "oos_trades": 793,
+      "oos_turnover": 410.85941644159095,
+      "oos_consistency": 0.25,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.23849667489098325,
+          "oos_return": -0.21786624088074824,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "MACD 히스토그램",
@@ -2064,7 +2064,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.09527854327526786,
+          "oos_return": 0.14202143378204757,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "MACD 히스토그램",
@@ -2073,7 +2073,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.2864825730593069,
+          "oos_return": 0.10974886779395798,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "Z-Score 평균회귀",
@@ -2082,7 +2082,7 @@
         },
         {
           "fold": 3,
-          "oos_return": 0.11241843017200837,
+          "oos_return": -0.009700063724762509,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2091,7 +2091,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.06691312844009623,
+          "oos_return": 0.05816665115555031,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "Z-Score 평균회귀",
@@ -2100,7 +2100,7 @@
         },
         {
           "fold": 5,
-          "oos_return": 0.20613649911166987,
+          "oos_return": -0.01226060206433166,
           "picks": {
             "BULL": "스토캐스틱 RSI",
             "BEAR": "Z-Score 평균회귀",
@@ -2109,7 +2109,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.15354434504024062,
+          "oos_return": -0.17272704167342823,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "Z-Score 평균회귀",
@@ -2118,7 +2118,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.051839357431311406,
+          "oos_return": -0.0121530876146696,
           "picks": {
             "BULL": "장기 추세 필터",
             "BEAR": "Z-Score 평균회귀",
@@ -2127,7 +2127,7 @@
         },
         {
           "fold": 8,
-          "oos_return": 0.07911090262732712,
+          "oos_return": 0.07266752208596183,
           "picks": {
             "BULL": "듀얼 모멘텀",
             "BEAR": "스토캐스틱 RSI",
@@ -2136,7 +2136,7 @@
         },
         {
           "fold": 9,
-          "oos_return": -0.08257032684615839,
+          "oos_return": -0.05603917795438906,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "윌리엄스 %R",
@@ -2145,7 +2145,7 @@
         },
         {
           "fold": 10,
-          "oos_return": 0.01195473222779908,
+          "oos_return": -0.06657828888771522,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "스토캐스틱 RSI",
@@ -2154,7 +2154,7 @@
         },
         {
           "fold": 11,
-          "oos_return": -0.17871284087923633,
+          "oos_return": -0.11468368229915638,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2163,7 +2163,7 @@
         },
         {
           "fold": 12,
-          "oos_return": 0.24400529745075739,
+          "oos_return": -0.23607983475081795,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "Z-Score 평균회귀",
@@ -2172,7 +2172,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.19241696044321732,
+          "oos_return": -0.23897615137220685,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "삼중 EMA",
@@ -2181,7 +2181,7 @@
         },
         {
           "fold": 14,
-          "oos_return": 0.11753056438705989,
+          "oos_return": -0.27166273809421004,
           "picks": {
             "BULL": "MACD 히스토그램",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2190,7 +2190,7 @@
         },
         {
           "fold": 15,
-          "oos_return": -0.07807643629848082,
+          "oos_return": -0.09715312015567401,
           "picks": {
             "BULL": "Z-Score 평균회귀",
             "BEAR": "이치모쿠 구름",
@@ -2203,16 +2203,16 @@
       "timeframe": "1h",
       "cost_multiplier": 1.0,
       "folds": 16,
-      "oos_total_return": -0.7985020981140435,
-      "oos_sharpe": -1.919157622409168,
-      "oos_mdd": -0.3406063227380878,
-      "oos_trades": 1424,
-      "oos_turnover": 702.2491628285169,
-      "oos_consistency": 0.375,
+      "oos_total_return": -0.4056095329370425,
+      "oos_sharpe": -0.8824458885003057,
+      "oos_mdd": -0.2442720096405808,
+      "oos_trades": 969,
+      "oos_turnover": 508.4029988067807,
+      "oos_consistency": 0.4375,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.2878421843897858,
+          "oos_return": -0.14549493988727236,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "머니플로우 지수 (MFI)",
@@ -2221,7 +2221,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.2684963260027733,
+          "oos_return": 0.0335781174307217,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "스토캐스틱 RSI",
@@ -2230,7 +2230,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.22751466274346,
+          "oos_return": 0.09152858275353926,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "Z-Score 평균회귀",
@@ -2239,7 +2239,7 @@
         },
         {
           "fold": 3,
-          "oos_return": 0.15592574878712462,
+          "oos_return": -0.09945202605383063,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2248,7 +2248,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.146880614754742,
+          "oos_return": -0.00584944513061092,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2257,7 +2257,7 @@
         },
         {
           "fold": 5,
-          "oos_return": -0.11845198562169756,
+          "oos_return": 0.10183686809582326,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2266,7 +2266,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.19372792133532246,
+          "oos_return": 0.0053225795605884585,
           "picks": {
             "BULL": "듀얼 모멘텀",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2275,7 +2275,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.3066574541090774,
+          "oos_return": 0.005199831781702358,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2284,7 +2284,7 @@
         },
         {
           "fold": 8,
-          "oos_return": -0.1119470975769482,
+          "oos_return": -0.042506724378089,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2293,7 +2293,7 @@
         },
         {
           "fold": 9,
-          "oos_return": -0.10179295325030002,
+          "oos_return": -0.02393057024313383,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2302,7 +2302,7 @@
         },
         {
           "fold": 10,
-          "oos_return": 0.06079423296877051,
+          "oos_return": -0.11472860149268538,
           "picks": {
             "BULL": "도니안 채널 돌파",
             "BEAR": "머니플로우 지수 (MFI)",
@@ -2311,7 +2311,7 @@
         },
         {
           "fold": 11,
-          "oos_return": 0.016531100715763136,
+          "oos_return": -0.09555337305718736,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2320,7 +2320,7 @@
         },
         {
           "fold": 12,
-          "oos_return": 0.12647409614171123,
+          "oos_return": 0.05879954869423676,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "삼중 EMA",
@@ -2329,7 +2329,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.28571160541485785,
+          "oos_return": -0.2214740735241102,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "삼중 EMA",
@@ -2338,7 +2338,7 @@
         },
         {
           "fold": 14,
-          "oos_return": 0.018446820770808392,
+          "oos_return": 0.1231214521643813,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "삼중 EMA",
@@ -2347,7 +2347,7 @@
         },
         {
           "fold": 15,
-          "oos_return": -0.15705476991396194,
+          "oos_return": -0.10719780202146267,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "도니안 채널 돌파",
@@ -2360,16 +2360,16 @@
       "timeframe": "1h",
       "cost_multiplier": 2.0,
       "folds": 16,
-      "oos_total_return": -0.9439572211214194,
-      "oos_sharpe": -3.601205175134349,
-      "oos_mdd": -0.37834967001061137,
-      "oos_trades": 1424,
-      "oos_turnover": 669.6246008021378,
-      "oos_consistency": 0.1875,
+      "oos_total_return": -0.7522053985164435,
+      "oos_sharpe": -2.262724270783127,
+      "oos_mdd": -0.3035529237298326,
+      "oos_trades": 969,
+      "oos_turnover": 489.63129508889085,
+      "oos_consistency": 0.25,
       "per_fold": [
         {
           "fold": 0,
-          "oos_return": -0.3591206043771702,
+          "oos_return": -0.1883431507575395,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "머니플로우 지수 (MFI)",
@@ -2378,7 +2378,7 @@
         },
         {
           "fold": 1,
-          "oos_return": 0.17243058726941807,
+          "oos_return": -0.06654595899062465,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "스토캐스틱 RSI",
@@ -2387,7 +2387,7 @@
         },
         {
           "fold": 2,
-          "oos_return": -0.2954128295743592,
+          "oos_return": 0.0198840371712945,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "Z-Score 평균회귀",
@@ -2396,7 +2396,7 @@
         },
         {
           "fold": 3,
-          "oos_return": 0.07844824607498113,
+          "oos_return": -0.14771152251043262,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2405,7 +2405,7 @@
         },
         {
           "fold": 4,
-          "oos_return": -0.2050938029742646,
+          "oos_return": -0.04644543379039445,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2414,7 +2414,7 @@
         },
         {
           "fold": 5,
-          "oos_return": -0.1977639207416264,
+          "oos_return": 0.033519400454332215,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2423,7 +2423,7 @@
         },
         {
           "fold": 6,
-          "oos_return": -0.2647298015871604,
+          "oos_return": -0.06285218575503071,
           "picks": {
             "BULL": "듀얼 모멘텀",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2432,7 +2432,7 @@
         },
         {
           "fold": 7,
-          "oos_return": -0.3597575856452996,
+          "oos_return": -0.04319991764481024,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2441,7 +2441,7 @@
         },
         {
           "fold": 8,
-          "oos_return": -0.176950440603159,
+          "oos_return": -0.08603886167243513,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2450,7 +2450,7 @@
         },
         {
           "fold": 9,
-          "oos_return": -0.16361699200532975,
+          "oos_return": -0.05662984384877279,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2459,7 +2459,7 @@
         },
         {
           "fold": 10,
-          "oos_return": -0.004806097705852497,
+          "oos_return": -0.15083132521505027,
           "picks": {
             "BULL": "도니안 채널 돌파",
             "BEAR": "머니플로우 지수 (MFI)",
@@ -2468,7 +2468,7 @@
         },
         {
           "fold": 11,
-          "oos_return": -0.05539934562707405,
+          "oos_return": -0.13400111514394164,
           "picks": {
             "BULL": "삼중 EMA",
             "BEAR": "RSI + 볼린저 밴드",
@@ -2477,7 +2477,7 @@
         },
         {
           "fold": 12,
-          "oos_return": 0.03617257643233818,
+          "oos_return": 0.003935441625065206,
           "picks": {
             "BULL": "EMA 크로스오버",
             "BEAR": "삼중 EMA",
@@ -2486,7 +2486,7 @@
         },
         {
           "fold": 13,
-          "oos_return": -0.33873969906172907,
+          "oos_return": -0.2828695307986264,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "삼중 EMA",
@@ -2495,7 +2495,7 @@
         },
         {
           "fold": 14,
-          "oos_return": -0.053760054747053254,
+          "oos_return": 0.09050831323803821,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "삼중 EMA",
@@ -2504,7 +2504,7 @@
         },
         {
           "fold": 15,
-          "oos_return": -0.22067297516452844,
+          "oos_return": -0.14465475730303534,
           "picks": {
             "BULL": "RSI + 볼린저 밴드",
             "BEAR": "도니안 채널 돌파",

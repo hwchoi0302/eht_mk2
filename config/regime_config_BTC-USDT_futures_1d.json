@@ -8,7 +8,7 @@
       "strategy_name": "듀얼 모멘텀",
       "strategy_params": {
         "leverage": 2,
-        "stop_loss_pct": 0.08,
+        "stop_loss_pct": 0.05,
         "take_profit_pct": 0.1,
         "max_allocation_pct": 0.35,
         "lookback_period": 46,
@@ -16,22 +16,21 @@
       }
     },
     "BEAR": {
-      "strategy_name": "삼중 EMA",
+      "strategy_name": "EMA 크로스오버",
       "strategy_params": {
         "leverage": 2,
-        "stop_loss_pct": 0.08,
+        "stop_loss_pct": 0.05,
         "take_profit_pct": 0.1,
         "max_allocation_pct": 0.35,
-        "fast_period": 20,
-        "mid_period": 49,
-        "slow_period": 96
+        "fast_period": 12,
+        "slow_period": 50
       }
     },
     "SIDEWAYS": {
       "strategy_name": "Z-Score 평균회귀",
       "strategy_params": {
         "leverage": 2,
-        "stop_loss_pct": 0.08,
+        "stop_loss_pct": 0.05,
         "take_profit_pct": 0.1,
         "max_allocation_pct": 0.35,
         "period": 20,
@@ -39,6 +38,6 @@
       }
     }
   },
-  "note": "워크포워드 재탐색 결과 (인샘플 6개월 → 아웃샘플 2개월 롤링, 16개 구간). 아웃샘플 +76.4%, 샤프 +0.73, 일관성 62%, 연 회전율 78회. 파라미터는 구간별 선택값의 합의치.",
-  "generated_at": "2026-09-18T01:19:00"
+  "note": "타임프레임 8종 × 국면 3 × 전략 15 전수 탐색 후 확정 (2026-09-19). 중첩 워크포워드에서 '국면별 전략을 전부 탐색해 조합'하는 방식은 전 타임프레임 손실이었다. 유일하게 안정적이던 신호는 BEAR 국면의 EMA 크로스오버(16폴드 중 12폴드에서 인샘플 1위). 그 한 가지만 반영하고 BULL/SIDEWAYS는 기존 구성을 유지한다. 아웃샘플 +79.30% / 샤프 0.73 / MDD -13.3% / 비용2배 +35.06% (기존 구성 대비 +52.89% → +79.30%, 비용2배 +18.01% → +35.06%).",
+  "generated_at": "2026-09-19T14:12:39"
 }

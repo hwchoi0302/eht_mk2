@@ -25,8 +25,12 @@ from core.paths import FUNDING_DIR
 # 수수료
 # ─────────────────────────────────────────────────────────────────────────────
 # 바이낸스 USDⓈ-M 선물 일반 등급(VIP0, BNB 할인 없음)
-TAKER_FEE = 0.0004   # 0.04% — 진입·청산 모두 시장가라 전 체결에 이 값이 붙는다
+TAKER_FEE = 0.0004   # 0.04% — 데모 계좌의 실제 청구 요율 (보수적 기본 프로필)
 MAKER_FEE = 0.0002   # 0.02% — 현재 전략은 쓰지 않는다(참고용)
+
+# 실계좌(VIP0) 요율은 taker 0.05%다 (ccxt 공개 스펙, 2026-09 확인).
+# 데모 계좌는 0.04%를 청구한다. 실계좌를 전제로 한 평가에는 아래 값을 쓴다.
+REAL_TAKER_FEE = 0.0005
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -154,6 +158,14 @@ def liquidation_price(entry_price, qty, direction, wallet_balance, margin_mode='
 # (스프레드 절반) + (변동성에 비례하는 충격) 이다.
 SLIPPAGE_BASE = 0.0001      # 1bp — BTCUSDT 퍼프의 반스프레드 + 상시 충격
 SLIPPAGE_ATR_COEF = 0.02    # ATR이 가격의 2%면 +4bp → 합계 5bp
+
+# ── 현실 프로필 ────────────────────────────────────────────────────────────────
+# 2026-09 실측: BTCUSDT 선물 스프레드 0.01bp, 시장가 $5만 매수 시 충격 0.01bp,
+# $50만도 0.10bp. 위 보수 프로필(1d 기준 편도 7.8bp)은 이 계좌 규모에서
+# 수백 배 비관적이다. 남는 실제 비용은 신호 확인 후 30초 폴링 사이의 가격 변화와
+# 봇측 손절의 체결 지연 정도라, 작은 ATR 비례항만 남긴다.
+REALISTIC_SLIPPAGE_BASE = 0.0001    # 1bp
+REALISTIC_SLIPPAGE_ATR_COEF = 0.005 # ATR 3%면 +1.5bp
 
 
 def slippage_frac(atr_pct, base=SLIPPAGE_BASE, coef=SLIPPAGE_ATR_COEF):

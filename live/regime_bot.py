@@ -148,6 +148,24 @@ class RegimeLiveTrader(LiveTrader):
         logging.info(log_msg)
         print(f"   ✅ {new_regime} 국면 최적 전략 '{new_strat_name}' 적용 완료!\n")
 
+    def _gate_regime_change(self, signal, confirmed):
+        """국면이 바뀐 봉에서는 진입하지 않는다 — 백테스트와 같은 규칙.
+
+        백테스트(RegimeSwitchingStrategy)는 국면이 바뀐 봉의 신호를 0으로 만든다.
+        그 봉에서는 청산만 하고, 새 국면의 전략은 다음 봉부터 쓴다.
+        라이브는 예전에 국면 전환 때 청산한 직후 같은 루프에서 새 전략의 신호로
+        바로 재진입해서, 백테스트보다 하루 먼저 들어갔다. 검증된 성과는 백테스트
+        규칙에서 나온 것이므로 라이브를 거기에 맞춘다.
+        상태 없이 판정하므로 봇이 재시작돼도 같은 결과가 나온다.
+        """
+        if len(confirmed) >= 3 and confirmed.iloc[-2] != confirmed.iloc[-3]:
+            if signal != 0:
+                logging.info(
+                    f"국면 전환 봉({confirmed.iloc[-3]} → {confirmed.iloc[-2]}): "
+                    f"신호 {signal}을 0으로 둔다 (다음 봉부터 새 전략)")
+            return 0
+        return signal
+
     def run_once(self):
         """동적으로 국면을 감지하여 전략을 교체하고, 최신 캔들에 기반해 주문을 실행합니다."""
         try:
@@ -186,13 +204,13 @@ class RegimeLiveTrader(LiveTrader):
             if self.dry_run:
                 # 드라이런인 경우 가상 신호만 출력
                 signals = self.strategy.generate_signals(df_ind)
-                signal = signals.iloc[-2]
+                signal = self._gate_regime_change(signals.iloc[-2], confirmed)
                 print(f"   [DRY-RUN] 신호 계산 완료: {signal} (1=롱, -1=숏, 0=대기)")
             else:
                 # fetch한 df_ind를 그대로 재사용하여 신호 생성
                 # (super().run_once() 호출 시 발생하는 이중 fetch 제거)
                 signals = self.strategy.generate_signals(df_ind)
-                signal = signals.iloc[-2]
+                signal = self._gate_regime_change(signals.iloc[-2], confirmed)
 
                 logging.info(f"Checking state. Last closed candle price: {last_closed_candle['close']}. Signal: {signal}")
 

@@ -243,9 +243,13 @@ class Backtester:
                 if want != 0:
                     equity = balance
                     notional = equity * alloc * leverage
-                    if rv is not None and np.isfinite(rv[i]) and rv[i] > 1e-9:
+                    # ⚠️ 진입은 i봉 시가다. 그 시점에 아는 변동성은 i-1봉 종가까지다.
+                    # rv[i]/atr[i]를 쓰면 i봉 자신의 고저·종가가 섞이는 미래 참조가 된다.
+                    # (처음엔 그렇게 짰다. 라이브에서는 재현할 수 없는 값이다.)
+                    rv_prev = rv[i - 1] if (rv is not None and i > 0) else np.nan
+                    if np.isfinite(rv_prev) and rv_prev > 1e-9:
                         # 위험 기여도를 일정하게. 과도한 레버리지를 막기 위해 제한.
-                        notional *= float(np.clip(target_vol / rv[i], 0.2, 3.0))
+                        notional *= float(np.clip(target_vol / rv_prev, 0.2, 3.0))
                     fill = self._fill(open_p, want, slip, is_entry=True)
                     raw_qty = notional / fill
                     new_qty = round_qty(raw_qty, self.spec)
@@ -261,7 +265,8 @@ class Backtester:
                         direction = want
                         entry_price = fill
                         entry_leverage = leverage
-                        bar_atr = atr_arr[i] if np.isfinite(atr_arr[i]) else None
+                        prev_atr = atr_arr[i - 1] if i > 0 else np.nan
+                        bar_atr = prev_atr if np.isfinite(prev_atr) else None
                         if atr_sl_mult and bar_atr:
                             sl_price = entry_price - direction * bar_atr * atr_sl_mult
                         else:

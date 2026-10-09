@@ -107,14 +107,16 @@ class PortfolioBacktester:
                 slip = self._slip(a, i)
                 fill = a['open'][i] * (1 + slip * want_dir)
                 notional = balance * self.max_allocation * self.leverage
-                if a['rv'] is not None and np.isfinite(a['rv'][i]) and a['rv'][i] > 1e-9:
-                    notional *= float(np.clip(self.target_vol / a['rv'][i], 0.2, 3.0))
+                # 진입 시점(i봉 시가)에 아는 건 i-1봉까지다 (미래 참조 방지)
+                rvp = a['rv'][i - 1] if (a['rv'] is not None and i > 0) else np.nan
+                if np.isfinite(rvp) and rvp > 1e-9:
+                    notional *= float(np.clip(self.target_vol / rvp, 0.2, 3.0))
                 q = round_qty(notional / fill, a['spec'])
                 if q > 0 and is_tradable(q, fill, a['spec']):
                     fee = q * fill * self.taker_fee
                     balance -= fee; fees += fee; volume += q * fill
                     pos_sym, pos_dir, qty, entry = want_sym, want_dir, q, fill
-                    bar_atr = a['atr'][i]
+                    bar_atr = a['atr'][i - 1] if i > 0 else np.nan
                     if self.atr_sl_mult and np.isfinite(bar_atr):
                         sl_price = entry - want_dir * bar_atr * self.atr_sl_mult
                     else:
